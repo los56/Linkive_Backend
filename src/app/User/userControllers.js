@@ -55,23 +55,20 @@ export const refreshJWT = async (req, res) => {
   // refresh 토큰으로 access 토큰을 재발급하는 함수
   const { refreshToken } = req.body;
   if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token not provided" });
+    return res.status(401).json({ message: "Refresh token not provided" }); // refreshToken이 없음
   }
   try {
+    // refreshToken이 유효한지 확인
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     const user = await getUserById(decoded.id);
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-    const { accessToken, newRefreshToken: refreshToken } = await generateToken(
-      user
-    );
-    refreshToken = newRefreshToken;
+    const { accessToken, refreshToken } = await generateToken(user); // 에러날수도있음 refreshToken 중복
     return res.json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
-    return res.status(403).json({ message: "Invalid refresh token" });
+    return res.status(403).json({ message: "Invalid refresh token" }); // refreshToken 만료, 다시 로그인 해야함
+    // 프론트에서 토큰을 삭제, 로그인 페이지로 이동
   }
 };
-
-export const logout = (req, res) => {};
