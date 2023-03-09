@@ -39,10 +39,39 @@ export const login = async (req, res) => {
   }
 };
 
-export const getAccessToken = (req, res, next) => {};
+export const isAccessTokenExpired = (accessToken) => {
+  // access 토큰이 만료되었는지 확인하는 함수
+  try {
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const { exp } = decoded;
+    const now = Date.now() / 1000;
+    return now >= exp;
+  } catch (err) {
+    return true;
+  }
+};
 
-export const getRfreshToken = (req, res) => {};
-
-export const loginSuccess = (req, res) => {};
+export const refreshJWT = async (req, res) => {
+  // refresh 토큰으로 access 토큰을 재발급하는 함수
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(401).json({ message: "Refresh token not provided" });
+  }
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const user = await getUserById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    const { accessToken, newRefreshToken: refreshToken } = await generateToken(
+      user
+    );
+    refreshToken = newRefreshToken;
+    return res.json({ accessToken, refreshToken });
+  } catch (err) {
+    console.error(err);
+    return res.status(403).json({ message: "Invalid refresh token" });
+  }
+};
 
 export const logout = (req, res) => {};
