@@ -1,6 +1,6 @@
 import express from "express";
 import {
-  emailLogin,
+  login,
   accessToken,
   refreshToken,
   loginSuccess,
@@ -10,11 +10,8 @@ import { getUserById } from "./userProvider";
 
 const userRouter = express.Router();
 
-userRouter.get("/:id", getUserById);
-userRouter.post("/emailLogin", emailLogin);
-userRouter.get("/accesstoken", accessToken);
-userRouter.get("/refreshtoken", refreshToken);
-userRouter.get("/login/success", loginSuccess);
+userRouter.post("/login", login);
+
 userRouter.post("/logout", logout);
 
 export default userRouter;
