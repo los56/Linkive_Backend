@@ -3,7 +3,9 @@ const router = express.Router();
 
 const imageController = require('./imageController');
 
-router.use('/upload', imageController.upload);
-router.use('/delete', imageController.delete);
+const upload = require('./setMulter');
+
+router.post('/upload', upload.single('img'), imageController.upload);
+router.post('/delete', imageController.delete);
 
 module.exports = router;
