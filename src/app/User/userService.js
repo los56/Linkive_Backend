@@ -1,17 +1,13 @@
 import pool from "../../../config/database";
+import hashPassword from "../../../utils/hashPassword";
 
-import {
-  findUserByEmail,
-  findUserById,
-  findUserByNickname,
-  insertUser,
-} from "./userDao";
+import { insertUser } from "./userDao";
 
 export const createUser = async (newUser) => {
-  const client = await pool.connect();
   const { id, password, email, nickname } = newUser;
+  const client = await pool.connect();
   try {
-    insertUser(client, id, password, email, nickname);
+    await insertUser(client, id, await hashPassword(password), email, nickname);
   } catch (err) {
     console.error(err);
   }

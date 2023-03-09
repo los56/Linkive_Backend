@@ -1,5 +1,7 @@
 import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
 import { createUser } from "./userService";
+import bcrypt from "bcrypt";
+
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -26,13 +28,20 @@ export const login = async (req, res) => {
   try {
     const user = await getUserById(id);
     if (!user) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res
+        .status(401)
+        .json({ message: "해당 id의 user가 존재하지 않습니다." });
     }
-    if (user.password !== password) {
-      console.log("비밀번호가 일치하지 않습니다.");
-      return res.status(401).json({ message: "Unauthorized" });
+
+    // 비밀번호가 일치하는지 확인합니다.
+    const isPasswordMatch = bcrypt.compareSync(password, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
     }
-    const { accessToken, refreshToken } = await generateToken(user); // 토큰을 생성합니다.
+
+    // 토큰을 생성합니다.
+    const { accessToken, refreshToken } = await generateToken(user);
     return res.json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
