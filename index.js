@@ -1,5 +1,4 @@
 import express from "express";
-import cookieParser from "cookie-parser";
 import cors from "cors";
 require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
@@ -14,7 +13,7 @@ const logger = morgan("dev");
 
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
-app.use(cookieParser()); // cookie를 사용하기 위해
+app.use(express.urlencoded({ extended: false })); // form 데이터를 받기 위해
 app.use(
   cors({
     origin: "*",
