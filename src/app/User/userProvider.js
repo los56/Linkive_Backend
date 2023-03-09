@@ -8,6 +8,7 @@ export const getUserById = async (id) => {
     const userInfo = await selectUserById(client, id); // 사용자 정보를 가져옵니다.
     if (!userInfo) {
       console.log("사용자 정보가 없습니다.");
+      return null;
     }
     return userInfo; // 사용자 정보를 반환합니다.
   } catch (err) {

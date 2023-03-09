@@ -24,6 +24,9 @@ export const login = async (req, res) => {
   const { id, password } = req.body;
   try {
     const user = await getUserById(id);
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     if (user.password !== password) {
       console.log("비밀번호가 일치하지 않습니다.");
       return res.status(401).json({ message: "Unauthorized" });
