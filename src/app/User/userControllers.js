@@ -1,4 +1,5 @@
-import { getUserById } from "./userProvider";
+import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
+import { createUser } from "./userService";
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -70,5 +71,28 @@ export const refreshJWT = async (req, res) => {
     console.error(err);
     return res.status(403).json({ message: "Invalid refresh token" }); // refreshToken 만료, 다시 로그인 해야함
     // 프론트에서 토큰을 삭제, 로그인 페이지로 이동
+  }
+};
+
+export const signup = async (req, res) => {
+  // 회원가입하는 함수
+  const { id, password, email, nickname } = req.body;
+  const newUser = { id, password, email, nickname };
+  if (await getUserByNickname(req.body.nickname)) {
+    // 닉네임이 중복되는지 확인
+    return res.status(409).json({ message: "Nickname already exists" });
+  } else if (await getUserByEmail(req.body.email)) {
+    // 이메일이 중복되는지 확인
+    return res.status(409).json({ message: "Email already exists" });
+  } else if (await getUserById(req.body.id)) {
+    // 아이디가 중복되는지 확인
+    return res.status(409).json({ message: "Id already exists" });
+  }
+  try {
+    await createUser(newUser);
+    return res.status(201).json({ message: "User created" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
