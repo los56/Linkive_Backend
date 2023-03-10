@@ -4,6 +4,7 @@ require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
 import pool from "./config/Database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
+import generateToken from "./utils/generateToken"; // 토큰을 생성하는 함수를 가져옵니다.
 
 const app = express();
 const logger = morgan("dev");
@@ -41,3 +42,5 @@ pool
   .finally(() => {
     pool.end(); // 데이터베이스 연결을 종료합니다.
   });
+
+console.log(generateToken());

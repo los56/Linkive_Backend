@@ -1,6 +1,7 @@
 import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
 import { createUser } from "./userService";
 import bcrypt from "bcrypt";
+import { sendVerificationEmail } from "../../../utils/sendEmail";
 
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -87,18 +88,25 @@ export const signup = async (req, res) => {
   // 회원가입하는 함수
   const { id, password, email, nickname } = req.body;
   const newUser = { id, password, email, nickname };
-  if (await getUserByNickname(req.body.nickname)) {
+
+  if (await getUserByNickname(nickname)) {
     // 닉네임이 중복되는지 확인
     return res.status(409).json({ message: "Nickname already exists" });
-  } else if (await getUserByEmail(req.body.email)) {
+  } else if (await getUserByEmail(email)) {
     // 이메일이 중복되는지 확인
     return res.status(409).json({ message: "Email already exists" });
-  } else if (await getUserById(req.body.id)) {
+  } else if (await getUserById(id)) {
     // 아이디가 중복되는지 확인
     return res.status(409).json({ message: "Id already exists" });
   }
   try {
     await createUser(newUser);
+    
+    // 이메일 인증을 위한 메일 전송
+
+    await sendVerificationEmail(email, verificationCode);
+
+
     return res.status(201).json({ message: "User created" });
   } catch (err) {
     console.error(err);
