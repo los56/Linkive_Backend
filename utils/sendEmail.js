@@ -49,3 +49,23 @@ export const sendVerifyEmail = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const sendEmailUserId = async (req, res) => {
+  const email = req.body.email;
+  const userInfo = await getUserByEmail(email);
+
+  try {
+    const mailOptions = {
+      from: "from 이메일",
+      to: email,
+      subject: "아이디 찾기",
+      html: `<h1>당신의 아이디는 ${userInfo.id}입니다.</h1>`,
+    };
+
+    await transporter.sendMail(mailOptions); // 이메일 전송
+
+    return res.status(200).json({ message: "이메일로 userId 전송 성공" });
+  } catch (err) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
