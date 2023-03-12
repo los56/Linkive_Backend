@@ -1,5 +1,5 @@
 import express from "express";
-import { sendVerifyEmail, verifyEmailCode } from "../../../utils/sendEmail";
+import { sendVerifyEmail } from "../../../utils/sendEmail";
 import { login, signup } from "./userControllers";
 
 const userRouter = express.Router();
@@ -7,7 +7,6 @@ const userRouter = express.Router();
 userRouter.post("/login", login);
 userRouter.post("/signup", signup);
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
-userRouter.post("/verifyEmail/verify", verifyEmailCode); // 이메일 인증번호 확인
 
 // 소셜로그인 : 카카오, 네이버, 구글
 // 회원탈퇴 : 이메일, 비밀번호 입력

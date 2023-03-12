@@ -43,7 +43,7 @@ export const login = async (req, res) => {
 
     // 토큰을 생성합니다.
     const { accessToken, refreshToken } = await generateToken(user);
-    return res.json({ accessToken, refreshToken });
+    return res.status(200).json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });
@@ -101,12 +101,6 @@ export const signup = async (req, res) => {
   }
   try {
     await createUser(newUser);
-    
-    // 이메일 인증을 위한 메일 전송
-
-    await sendVerificationEmail(email, verificationCode);
-
-
     return res.status(201).json({ message: "User created" });
   } catch (err) {
     console.error(err);
