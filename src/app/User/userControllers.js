@@ -1,7 +1,6 @@
 import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
-import { createUser } from "./userService";
+import { createUser, changePassword } from "./userService";
 import bcrypt from "bcrypt";
-import { sendVerificationEmail } from "../../../utils/sendEmail";
 
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -102,6 +101,18 @@ export const signup = async (req, res) => {
   try {
     await createUser(newUser);
     return res.status(201).json({ message: "User created" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const changePasswordC = async (req, res) => {
+  // 비밀번호 변경하는 함수
+  const { id, newPassword } = req.body;
+  try {
+    await changePassword(id, newPassword);
+    return res.status(200).json({ message: "Password changed" });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });

@@ -52,3 +52,20 @@ export const insertUser = async (client, id, password, email, nickname) => {
     console.error(err);
   }
 };
+
+export const saveUser = async (client, user) => {
+  const saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $3 WHERE users_num = $4`;
+  try {
+    const changedUserInfo = await client.query(saveUserQuery, [
+      user.nickname,
+      user.id,
+      user.password,
+      user.users_num,
+    ]); // 쿼리문을 실행합니다.
+    return changedUserInfo;
+  } catch (err) {
+    console.log("saveUser error");
+    console.error(err);
+    throw err;
+  }
+};
