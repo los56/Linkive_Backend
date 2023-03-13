@@ -1,6 +1,12 @@
 import express from "express";
 import { sendVerifyEmail, sendEmailUserId } from "../../../utils/sendEmail";
-import { login, signup, changePasswordC } from "./userControllers";
+import {
+  login,
+  signup,
+  changePasswordC,
+  changeUserInfo,
+} from "./userControllers";
+import { jwtAthorization } from "../../../middlewares/jwtAthorization";
 
 const userRouter = express.Router();
 
@@ -9,7 +15,7 @@ userRouter.post("/signup", signup);
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
 userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
 userRouter.post("/changePassword", changePasswordC); // 비밀번호 변경
-// userRouter.post("/changeUserInfo", changeUserInfo); // 회원정보 변경
+userRouter.post("/changeUserInfo", jwtAthorization, changeUserInfo); // 회원정보 변경
 
 // 소셜로그인 : 카카오, 네이버, 구글
 // 회원탈퇴 : 이메일, 비밀번호 입력

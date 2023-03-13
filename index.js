@@ -42,5 +42,3 @@ pool
   .finally(() => {
     pool.end(); // 데이터베이스 연결을 종료합니다.
   });
-
-console.log(generateToken());

@@ -1,5 +1,9 @@
 import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
-import { createUser, changePassword } from "./userService";
+import {
+  createUser,
+  changePassword,
+  changeUserInfoService,
+} from "./userService";
 import bcrypt from "bcrypt";
 
 const jwt = require("jsonwebtoken");
@@ -49,33 +53,36 @@ export const login = async (req, res) => {
   }
 };
 
-export const isAccessTokenExpired = (accessToken) => {
+export const isNotAccessTokenExpired = (accessToken) => {
   // access 토큰이 만료되었는지 확인하는 함수
   try {
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
     const { exp } = decoded;
     const now = Date.now() / 1000;
-    return now >= exp;
+    return exp >= now ? decoded.id : false; // 만료되지 않았다면 user id 반환 만료되먼 false 반환
   } catch (err) {
-    return true;
+    return false;
   }
 };
 
 export const refreshJWT = async (req, res) => {
   // refresh 토큰으로 access 토큰을 재발급하는 함수
-  const { refreshToken } = req.body;
-  if (!refreshToken) {
-    return res.status(401).json({ message: "Refresh token not provided" }); // refreshToken이 없음
-  }
   try {
+    const refreshToken = req.headers["refreshToken"];
+    if (!refreshToken) {
+      return res.status(401).json({ message: "Refresh token not provided" }); // refreshToken이 없음
+    }
     // refreshToken이 유효한지 확인
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     const user = await getUserById(decoded.id);
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-    const { accessToken, refreshToken } = await generateToken(user); // 에러날수도있음 refreshToken 중복
-    return res.json({ accessToken, refreshToken });
+    const { newAccessToken, newRefreshToken } = await generateToken(user); // 에러날수도있음 refreshToken 중복
+    return res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
   } catch (err) {
     console.error(err);
     return res.status(403).json({ message: "Invalid refresh token" }); // refreshToken 만료, 다시 로그인 해야함
@@ -116,5 +123,23 @@ export const changePasswordC = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const changeUserInfo = async (req, res) => {
+  // 유저 정보 변경하는 함수
+  console.log("changeUserInfo 시작");
+  console.log(req.body);
+  const { nickname: newNickname, id: newId, password: newPassword } = req.body;
+  const id = req.id; // 미들웨어에서 넣어준 id
+  console.log("new Nickname : ", newNickname);
+  try {
+    await changeUserInfoService(id, newNickname, newId, newPassword);
+    return res.status(200).json({ message: "User info changed" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "controller - changeUserInfo error" });
   }
 };
