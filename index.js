@@ -25,7 +25,7 @@ app.use(logger); // 로그를 남기기 위해
 
 // 라우터 설정
 app.use("/users", userRouter);
-app.use("/images/", imageRouter);
+app.use("/images", imageRouter);
 
 // 서버 실행
 app.listen(process.env.PORT, () => {

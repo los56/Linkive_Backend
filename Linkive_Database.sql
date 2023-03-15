@@ -2,7 +2,7 @@ CREATE TABLE users (
     users_num SERIAL PRIMARY KEY,
     id VARCHAR(20) UNIQUE NOT NULL,
     nickname VARCHAR(10) UNIQUE NOT NULL,
-    password VARCHAR(20) NOT NULL,
+    password VARCHAR(150) NOT NULL,
     email VARCHAR(320) UNIQUE NOT NULL,
     socialLogin VARCHAR(20)
 );
