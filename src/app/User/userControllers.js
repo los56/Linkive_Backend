@@ -76,10 +76,9 @@ export const changePasswordC = async (req, res) => {
 export const changeUserInfo = async (req, res) => {
   // 유저 정보 변경하는 함수
   console.log("changeUserInfo 시작");
-  console.log(req.body);
   const { nickname: newNickname, id: newId, password: newPassword } = req.body;
-  const id = req.id; // 미들웨어에서 넣어준 id
-  console.log("new Nickname : ", newNickname);
+  const accessToken = res.locals.accessToken;
+  const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
     await changeUserInfoService(id, newNickname, newId, newPassword);
     return res.status(200).json({ message: "User info changed" });
