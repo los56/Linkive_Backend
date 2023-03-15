@@ -1,7 +1,7 @@
 import pool from "../../../config/database";
 import hashPassword from "../../../utils/hashPassword";
 
-import { insertUser, saveUser, findUserById } from "./userDao";
+import { insertUser, saveUser, findUserById, deleteUserById } from "./userDao";
 import { getUserById } from "./userProvider";
 
 export const createUser = async (newUser) => {
@@ -18,11 +18,11 @@ export const changePassword = async (id, newPassword) => {
   const client = await pool.connect();
   try {
     const user = await findUserById(client, id);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "해당 id의 user가 존재하지 않습니다." });
-    }
+    // if (!user) {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "해당 id의 user가 존재하지 않습니다." });
+    // }
     user.password = await hashPassword(newPassword); // 비밀번호 변경
     await saveUser(client, user);
   } catch (err) {
@@ -59,6 +59,18 @@ export const changeUserInfoService = async (
     await saveUser(client, user);
   } catch (err) {
     console.log("changeUserInfoService error");
+    console.error(err);
+    throw err;
+  } finally {
+    client.release();
+  }
+};
+
+export const deleteUserService = async (id) => {
+  const client = await pool.connect();
+  try {
+    await deleteUserById(client, id);
+  } catch (err) {
     console.error(err);
     throw err;
   } finally {

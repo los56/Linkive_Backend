@@ -72,3 +72,13 @@ export const saveUser = async (client, user) => {
     throw err;
   }
 };
+
+export const deleteUserById = async (client, id) => {
+  const deleteUserByIdQuery = `DELETE FROM users WHERE id = $1`; // id로 사용자 정보를 삭제하는 쿼리문을 정의합니다.
+  try {
+    await client.query(deleteUserByIdQuery, [id]); // 쿼리문을 실행합니다.
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};

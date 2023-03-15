@@ -3,6 +3,7 @@ import {
   createUser,
   changePassword,
   changeUserInfoService,
+  deleteUserService,
 } from "./userService";
 import bcrypt from "bcrypt";
 import { generateToken } from "../../../middlewares/jwtAuthorization.js";
@@ -81,11 +82,28 @@ export const changeUserInfo = async (req, res) => {
   const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
     await changeUserInfoService(id, newNickname, newId, newPassword);
-    return res.status(200).json({ message: "User info changed" });
+    return res
+      .status(200)
+      .json({
+        accessToken: res.locals.accessToken,
+        refreshToken: res.locals.refreshToken,
+        message: "User info changed",
+      });
   } catch (err) {
     console.error(err);
     return res
       .status(500)
       .json({ message: "controller - changeUserInfo error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const id = jwt.verify(res.locals.accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
+  try {
+    await deleteUserService(id);
+    return res.status(200).json({ message: "User deleted" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

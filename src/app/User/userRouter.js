@@ -5,6 +5,7 @@ import {
   signup,
   changePasswordC,
   changeUserInfo,
+  deleteUser,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 
@@ -23,6 +24,7 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
     refreshToken: res.locals.refreshToken,
   });
 });
+userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
 
 // 소셜로그인 : 카카오, 네이버, 구글
 // 회원탈퇴 : 이메일, 비밀번호 입력
