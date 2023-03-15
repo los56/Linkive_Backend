@@ -10,9 +10,6 @@ export const jwtAuthorization = async (req, res, next) => {
 
   // accessToken이 유효한지 확인
   jwt.verify(accessToken, process.env.JWT_SECRET, (err, user) => {
-    console.log("Access Token 유효");
-    res.locals.accessToken = accessToken;
-    res.locals.refreshToken = req.headers["refresh-token"];
     if (err) {
       // Access token이 검증되지 않는 경우, 오류발생
       const refreshToken = req.headers["refresh-token"];
@@ -38,11 +35,16 @@ export const jwtAuthorization = async (req, res, next) => {
           console.log("새로운 Access Token 발급");
           res.locals.accessToken = accessToken;
           res.locals.refreshToken = refreshToken;
+          next(); // 새로운 Access Token 발급 후 next() 함수 호출
         }
       );
+    } else {
+      console.log("Access Token 유효");
+      res.locals.accessToken = accessToken;
+      res.locals.refreshToken = req.headers["refresh-token"];
+      next(); // Access Token 유효할 때도 next() 함수 호출
     }
   });
-  next();
 };
 
 export const generateToken = async (user) => {
@@ -50,7 +52,7 @@ export const generateToken = async (user) => {
   const accessToken = jwt.sign(
     { id: user.id, email: user.email, nickname: user.nickname },
     process.env.JWT_SECRET,
-    { expiresIn: "1m" }
+    { expiresIn: "20s" }
   );
 
   const refreshToken = jwt.sign(
