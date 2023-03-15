@@ -1,7 +1,7 @@
 import { getUserById, getUserByNickname, getUserByEmail } from "./userProvider";
 import {
   createUser,
-  changePassword,
+  changePasswordService,
   changeUserInfoService,
   deleteUserService,
 } from "./userService";
@@ -62,15 +62,17 @@ export const signup = async (req, res) => {
   }
 };
 
-export const changePasswordC = async (req, res) => {
+export const changePassword = async (req, res) => {
   // 비밀번호 변경하는 함수
   const { id, newPassword } = req.body;
   try {
-    await changePassword(id, newPassword);
+    await changePasswordService(id, newPassword);
     return res.status(200).json({ message: "Password changed" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: "controller Internal server error" });
   }
 };
 
@@ -82,13 +84,11 @@ export const changeUserInfo = async (req, res) => {
   const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
     await changeUserInfoService(id, newNickname, newId, newPassword);
-    return res
-      .status(200)
-      .json({
-        accessToken: res.locals.accessToken,
-        refreshToken: res.locals.refreshToken,
-        message: "User info changed",
-      });
+    return res.status(200).json({
+      accessToken: res.locals.accessToken,
+      refreshToken: res.locals.refreshToken,
+      message: "User info changed",
+    });
   } catch (err) {
     console.error(err);
     return res

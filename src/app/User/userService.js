@@ -14,15 +14,13 @@ export const createUser = async (newUser) => {
   }
 };
 
-export const changePassword = async (id, newPassword) => {
+export const changePasswordService = async (id, newPassword) => {
   const client = await pool.connect();
   try {
     const user = await findUserById(client, id);
-    // if (!user) {
-    //   return res
-    //     .status(401)
-    //     .json({ message: "해당 id의 user가 존재하지 않습니다." });
-    // }
+    if (!user) {
+      throw new Error("존재하지 않는 사용자입니다.");
+    }
     user.password = await hashPassword(newPassword); // 비밀번호 변경
     await saveUser(client, user);
   } catch (err) {

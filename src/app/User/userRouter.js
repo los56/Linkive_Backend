@@ -3,7 +3,7 @@ import { sendVerifyEmail, sendEmailUserId } from "../../../utils/sendEmail";
 import {
   login,
   signup,
-  changePasswordC,
+  changePassword,
   changeUserInfo,
   deleteUser,
 } from "./userControllers";
@@ -15,7 +15,7 @@ userRouter.post("/login", login);
 userRouter.post("/signup", signup);
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
 userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
-userRouter.post("/changePassword", changePasswordC); // 비밀번호 변경
+userRouter.post("/changePassword", changePassword); // 비밀번호 변경
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
   return res.status(200).json({
