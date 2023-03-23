@@ -35,6 +35,8 @@ export const jwtAuthorization = async (req, res, next) => {
           console.log("새로운 Access Token 발급");
           res.locals.accessToken = accessToken;
           res.locals.refreshToken = refreshToken;
+          res.locals.user = user;
+          console.log(user);
           next(); // 새로운 Access Token 발급 후 next() 함수 호출
         }
       );
@@ -42,6 +44,8 @@ export const jwtAuthorization = async (req, res, next) => {
       console.log("Access Token 유효");
       res.locals.accessToken = accessToken;
       res.locals.refreshToken = req.headers["refresh-token"];
+      res.locals.user = user;
+      console.log(user);
       next(); // Access Token 유효할 때도 next() 함수 호출
     }
   });
@@ -52,7 +56,7 @@ export const generateToken = async (user) => {
   const accessToken = jwt.sign(
     { id: user.id, email: user.email, nickname: user.nickname },
     process.env.JWT_SECRET,
-    { expiresIn: "20s" }
+    { expiresIn: "1h" }
   );
 
   const refreshToken = jwt.sign(
