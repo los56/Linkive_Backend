@@ -5,6 +5,10 @@ import morgan from "morgan"; // 로그를 남기는 미들웨어
 import pool from "./config/Database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
 
+// NamHyeok's Routers
+const imageRouter = require('./src/app/Image/imageRouter');
+const memoRouter = require('./src/app/Memo/memoRouter');
+
 const app = express();
 const logger = morgan("dev");
 
@@ -20,11 +24,16 @@ app.use(
 ); // cors 설정
 app.use(logger); // 로그를 남기기 위해
 
+// Get real IP
+app.set('trust proxy', true);
+
 // 라우터 설정
 app.use("/users", userRouter);
+app.use("/images", imageRouter);
+app.use("/memos", memoRouter);
 
 // 서버 실행
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT, '0.0.0.0', () => {
   console.log(`server is on ${process.env.PORT}`);
 });
 
