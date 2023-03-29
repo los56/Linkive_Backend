@@ -1,3 +1,5 @@
+import hashPassword from "../../../utils/hashPassword.js";
+
 export const findUserById = async (client, id) => {
   const findUserByIdQuery = `SELECT * FROM users WHERE id = $1`; // id로 사용자 정보를 가져오는 쿼리문을 정의합니다.
   try {
@@ -50,5 +52,33 @@ export const insertUser = async (client, id, password, email, nickname) => {
     return userInfo.rows[0]; // 사용자 정보를 반환합니다.
   } catch (err) {
     console.error(err);
+  }
+};
+
+export const saveUser = async (client, user) => {
+  console.log("saveUser 시작");
+  const saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $3 WHERE users_num = $4`;
+  try {
+    await client.query(saveUserQuery, [
+      user.nickname,
+      user.id,
+      await hashPassword(user.password),
+      user.users_num,
+    ]); // 쿼리문을 실행합니다.
+    console.log("saveUser 성공");
+  } catch (err) {
+    console.log("saveUser error");
+    console.error(err);
+    throw err;
+  }
+};
+
+export const deleteUserById = async (client, id) => {
+  const deleteUserByIdQuery = `DELETE FROM users WHERE id = $1`; // id로 사용자 정보를 삭제하는 쿼리문을 정의합니다.
+  try {
+    await client.query(deleteUserByIdQuery, [id]); // 쿼리문을 실행합니다.
+  } catch (err) {
+    console.error(err);
+    throw err;
   }
 };
