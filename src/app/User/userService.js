@@ -11,6 +11,8 @@ export const createUser = async (newUser) => {
     await insertUser(client, id, await hashPassword(password), email, nickname);
   } catch (err) {
     console.error(err);
+  } finally {
+    client.release();
   }
 };
 

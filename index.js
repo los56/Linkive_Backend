@@ -40,7 +40,7 @@ pool
   })
   .catch((err) => {
     console.error("데이터베이스 연결 오류:", err.message);
-  })
-  .finally(() => {
-    pool.end(); // 데이터베이스 연결을 종료합니다.
   });
+// .finally(() => {
+//   pool.end(); // 데이터베이스 연결을 종료합니다.
+// });
