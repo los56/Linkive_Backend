@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
-import pool from "./config/Database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
+import pool from "./config/database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
-
+import passport from "passport";
 const app = express();
 const logger = morgan("dev");
 
@@ -19,6 +19,9 @@ app.use(
   })
 ); // cors 설정
 app.use(logger); // 로그를 남기기 위해
+
+// Passport 초기화
+app.use(passport.initialize());
 
 // 라우터 설정
 app.use("/users", userRouter);
