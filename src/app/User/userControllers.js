@@ -108,6 +108,14 @@ export const changeUserInfo = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const id = jwt.verify(res.locals.accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
+  const user = await getUserById(id);
+  const { email, password } = req.body;
+  if (user.email !== email) {
+    return res.status(401).json({ message: "이메일이 일치하지 않습니다." });
+  } else if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+  }
+
   try {
     await deleteUserService(id);
     return res.status(200).json({ message: "User deleted" });

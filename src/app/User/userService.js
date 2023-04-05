@@ -1,5 +1,4 @@
 import pool from "../../../config/database";
-import hashPassword from "../../../utils/hashPassword";
 
 import { insertUser, saveUser, findUserById, deleteUserById } from "./userDao";
 import { getUserById } from "./userProvider";
@@ -23,7 +22,7 @@ export const changePasswordService = async (id, newPassword) => {
     if (!user) {
       throw new Error("존재하지 않는 사용자입니다.");
     }
-    user.password = await hashPassword(newPassword); // 비밀번호 변경
+    user.password = newPassword; // 비밀번호 변경
     await saveUser(client, user);
   } catch (err) {
     console.log("changePassword error");
