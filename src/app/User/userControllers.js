@@ -121,6 +121,7 @@ export const googleStrategy = new GoogleStrategy(
     try {
       const exUser = await getUserById(profile.id); // 이미 가입된 유저인지 확인
       if (exUser) {
+        console.log("이미 가입된 유저");
         done(null, exUser); // 이미 가입된 유저면 done
       } else {
         const newUser = await createUser({
@@ -130,6 +131,7 @@ export const googleStrategy = new GoogleStrategy(
           nickname: profile.displayName,
           socialLogin: "google",
         }); // 새로운 유저면 생성
+        console.log("새로운 유저 생성");
         done(null, newUser); // 회원가입하고 로그인 인증 완료
       }
     } catch (err) {

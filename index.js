@@ -7,21 +7,34 @@ import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵�
 import passport from "passport";
 const app = express();
 const logger = morgan("dev");
+const session = require("express-session");
 
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
 app.use(express.urlencoded({ extended: false })); // form 데이터를 받기 위해
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    // credentials: true,
-  })
-); // cors 설정
+app.use(cors()); // cors 설정
 app.use(logger); // 로그를 남기기 위해
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", true); // credentials 옵션을 true로 설정합니다.
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  next();
+});
 
 // Passport 초기화
 app.use(passport.initialize());
+
+app.use(
+  session({
+    secret: "mysecretkey",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // 라우터 설정
 app.use("/users", userRouter);
