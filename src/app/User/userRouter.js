@@ -19,9 +19,9 @@ userRouter.post("/login", login);
 userRouter.post("/signup", signup);
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
 userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
-userRouter.post("/changePassword", changePassword); // 비밀번호 변경
+userRouter.post("/changePassword", changePassword); // 비밀번호 변경 to do : 이메일 입력 추가
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
-userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
+userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => { // jwt 토큰 인증 테스트 
   return res.status(200).json({
     message: "good",
     accessToken: res.locals.accessToken,
@@ -45,6 +45,5 @@ userRouter.get(
 );
 
 // 회원탈퇴 : 이메일, 비밀번호 입력
-// 비밀번호 찾기 : 아이디, 이메일입력 -> 인증번호 보냄 -> 변경할 비밀번호 입력
 
 export default userRouter;

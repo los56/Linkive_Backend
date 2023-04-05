@@ -13,7 +13,6 @@ const transporter = nodemailer.createTransport({
 
 export const sendVerifyEmail = async (req, res) => {
   // nodemailer 모듈을 사용하여 이메일을 전송합니다.
-
   const { email } = req.body; // 유저의 이메일을 받아옵니다.
   const emailAuthType = req.headers["email-auth-type"]; // 이메일 인증 타입을 받아옵니다.
 
@@ -44,7 +43,7 @@ export const sendVerifyEmail = async (req, res) => {
 
     await transporter.sendMail(mailOptions); // 이메일 전송
 
-    return res.status(200).json({ verificationCode });
+    return res.status(200).json({ verificationCode });  // 클라이언트에게 인증코드를 주고 클라이언트에서 이 코드와 유저가 입력한 코드가 같으면 인증성공 시키기
   } catch (err) {
     return res.status(500).json({ message: "Internal server error" });
   }

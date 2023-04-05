@@ -65,7 +65,15 @@ export const signup = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   // 비밀번호 변경하는 함수
-  const { id, newPassword } = req.body;
+  const { id, email, newPassword } = req.body;
+  const user = await getUserById(id);
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "해당 id의 user가 존재하지 않습니다." });
+  } else if (user.email !== email) {
+    return res.status(401).json({ message: "이메일이 일치하지 않습니다." });
+  }
   try {
     await changePasswordService(id, newPassword);
     return res.status(200).json({ message: "Password changed" });
