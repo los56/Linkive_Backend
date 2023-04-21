@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
-import pool from "./config/Database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
+import pool from "./config/database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
 
 // NamHyeok's Routers
@@ -24,10 +24,14 @@ app.use(
 ); // cors 설정
 app.use(logger); // 로그를 남기기 위해
 
+const {swaggerUi, specs} = require("./config/swagger");
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
+
 // Get real IP
 app.set('trust proxy', true);
 
 // 라우터 설정
+
 app.use("/users", userRouter);
 app.use("/images", imageRouter);
 app.use("/memos", memoRouter);
@@ -47,6 +51,6 @@ pool
   .catch((err) => {
     console.error("데이터베이스 연결 오류:", err.message);
   })
-  .finally(() => {
-    pool.end(); // 데이터베이스 연결을 종료합니다.
-  });
+  // .finally(() => {
+  //   pool.end(); // 데이터베이스 연결을 종료합니다.
+  // });
