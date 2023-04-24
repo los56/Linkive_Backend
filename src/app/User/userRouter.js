@@ -13,6 +13,7 @@ import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
 import { getUserById } from "./userProvider";
 import { createUser } from "./userService";
+import checkAuth from "../../../middlewares/checkAuth";
 
 const userRouter = express.Router();
 
@@ -28,6 +29,12 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
     message: "good",
     accessToken: res.locals.accessToken,
     refreshToken: res.locals.refreshToken,
+  });
+});
+userRouter.get("/checkAuth", checkAuth, (req, res) => {
+  // checkAuth 테스트
+  return res.status(200).json({
+    message: "good",
   });
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
@@ -53,7 +60,8 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       // Get access and refresh tokens (if access_type is offline)
       let { tokens } = await oauth2Client.getToken(q.code);
       oauth2Client.setCredentials(tokens);
-      // console.log(tokens);
+      console.log(tokens);
+      console.log(tokens.access_token);
 
       // Get the user's profile information
       let userInfo = await oauth2Client.request({
@@ -76,8 +84,6 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
             secure: true,
             expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
           });
-          console.log(res.cookies); // undefined
-          console.log(req.cookies); // 잘나옴
           return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
         } else {
           const newUser = await createUser({
