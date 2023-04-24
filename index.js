@@ -6,12 +6,14 @@ import pool from "./config/database"; // 데이터베이스 연결을 위한 poo
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
 const app = express();
 const logger = morgan("dev");
+const cookieParser = require("cookie-parser");
 
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
 app.use(express.urlencoded({ extended: false })); // form 데이터를 받기 위해
 app.use(cors()); // cors 설정
 app.use(logger); // 로그를 남기기 위해
+app.use(cookieParser()); // 쿠키를 사용하기 위해
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header(

@@ -70,6 +70,14 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
         const exUser = await getUserById(id); // 이미 가입된 유저인지 확인
         if (exUser) {
           console.log("이미 가입된 유저");
+          // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
+          res.cookie("accessToken", tokens.access_token, {
+            httpOnly: true,
+            secure: true,
+            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
+          });
+          console.log(res.cookies); // undefined
+          console.log(req.cookies); // 잘나옴
           return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
         } else {
           const newUser = await createUser({
@@ -80,6 +88,12 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
             socialLogin: "google",
           }); // 새로운 유저면 생성
           console.log("새로운 유저 생성");
+          // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
+          res.cookie("accessToken", tokens.access_token, {
+            httpOnly: true,
+            secure: true,
+            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
+          });
           return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
         }
       } catch (err) {
