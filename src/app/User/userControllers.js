@@ -7,8 +7,6 @@ import {
 } from "./userService";
 import bcrypt from "bcrypt";
 import { generateToken } from "../../../middlewares/jwtAuthorization.js";
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const passport = require("passport");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -126,35 +124,33 @@ export const deleteUser = async (req, res) => {
 };
 
 // Google oauth
-export const googleStrategy = new GoogleStrategy(
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID, // .env 파일에서 클라이언트 ID 값을 읽어옵니다.
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:8123/users/auth/google/callback",
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    console.log("google profile : ", profile);
-    try {
-      const exUser = await getUserById(profile.id); // 이미 가입된 유저인지 확인
-      if (exUser) {
-        console.log("이미 가입된 유저");
-        done(null, exUser); // 이미 가입된 유저면 done
-      } else {
-        const newUser = await createUser({
-          id: profile.id,
-          password: profile.id,
-          email: profile?.emails[0].value,
-          nickname: profile.displayName,
-          socialLogin: "google",
-        }); // 새로운 유저면 생성
-        console.log("새로운 유저 생성");
-        done(null, newUser); // 회원가입하고 로그인 인증 완료
-      }
-    } catch (err) {
-      console.error(err);
-      done(err);
-    }
-  }
-);
-// Passport에 Google 전략 등록
-passport.use("google", googleStrategy);
+// export const googleStrategy = new GoogleStrategy(
+//   {
+//     clientID: process.env.GOOGLE_CLIENT_ID, // .env 파일에서 클라이언트 ID 값을 읽어옵니다.
+//     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//     callbackURL: "http://localhost:8123/users/auth/google/callback",
+//   },
+//   async (accessToken, refreshToken, profile, done) => {
+//     console.log("google profile : ", profile);
+//     try {
+//       const exUser = await getUserById(profile.id); // 이미 가입된 유저인지 확인
+//       if (exUser) {
+//         console.log("이미 가입된 유저");
+//         done(null, exUser); // 이미 가입된 유저면 done
+//       } else {
+//         const newUser = await createUser({
+//           id: profile.id,
+//           password: profile.id,
+//           email: profile?.emails[0].value,
+//           nickname: profile.displayName,
+//           socialLogin: "google",
+//         }); // 새로운 유저면 생성
+//         console.log("새로운 유저 생성");
+//         done(null, newUser); // 회원가입하고 로그인 인증 완료
+//       }
+//     } catch (err) {
+//       console.error(err);
+//       done(err);
+//     }
+//   }
+// );

@@ -8,10 +8,9 @@ import {
   changePassword,
   changeUserInfo,
   deleteUser,
-  googleStrategy,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
-import passport from "passport";
+import { oauth2Client, authorizationUrl } from "../../../config/oauth";
 
 const userRouter = express.Router();
 
@@ -31,18 +30,46 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
 
-// 소셜로그인 : 카카오, 네이버, 구글
-userRouter.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-userRouter.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  (req, res) => {
-    console.log("google login success");
-    res.redirect("/");
+// 소셜로그인 : 구글
+userRouter.get("/auth/google", (req, res) => {
+  res.writeHead(301, { Location: authorizationUrl });
+  res.end();
+});
+userRouter.get("/auth/google/callback", async (req, res, next) => {
+  console.log("google callback");
+
+  const url = require("url");
+  // Receive the callback from Google's OAuth 2.0 server.
+  if (req.url.startsWith("/auth/google/callback")) {
+    let userCredential = null;
+    // Handle the OAuth 2.0 server response
+    let q = url.parse(req.url, true).query;
+    if (q.error) {
+      // An error response e.g. error=access_denied
+      console.log("Error:" + q.error);
+    } else {
+      // Get access and refresh tokens (if access_type is offline)
+      let { tokens } = await oauth2Client.getToken(q.code);
+      oauth2Client.setCredentials(tokens);
+      // console.log(tokens);
+
+      // Get the user's profile information
+      let userInfo = await oauth2Client.request({
+        url: "https://www.googleapis.com/oauth2/v2/userinfo",
+      }); // id, email, name, picture
+
+      console.log(userInfo.data);
+      console.log("google login success");
+      userCredential = userInfo.data;
+      res.redirect(`${process.env.CLIENT_URL}/`);
+      // res.redirect(`${process.env.CLIENT_URL}/login`);
+      // res.redirect(`${process.env.CLIENT_URL}/login?email=${userCredential.email}&name=${userCredential.name}`);
+    }
   }
-);
+});
+
+// 소셜로그인 : 네이버
+
+// 소셜로그인 : 카카오
 
 export default userRouter;

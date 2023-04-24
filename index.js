@@ -4,10 +4,8 @@ require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
 import pool from "./config/database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
-import passport from "passport";
 const app = express();
 const logger = morgan("dev");
-const session = require("express-session");
 
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
@@ -24,17 +22,6 @@ app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   next();
 });
-
-// Passport 초기화
-app.use(passport.initialize());
-
-app.use(
-  session({
-    secret: "mysecretkey",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
 
 // 라우터 설정
 app.use("/users", userRouter);
