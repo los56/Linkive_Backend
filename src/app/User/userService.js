@@ -2,14 +2,16 @@ import pool from "../../../config/database";
 
 import { insertUser, saveUser, findUserById, deleteUserById } from "./userDao";
 import { getUserById } from "./userProvider";
+import hashPassword from "../../../utils/hashPassword";
 
 export const createUser = async (newUser) => {
-  const { id, password, email, nickname } = newUser;
+  const { id, password, email, nickname, socialLogin=null } = newUser;
   const client = await pool.connect();
   try {
-    await insertUser(client, id, await hashPassword(password), email, nickname);
+    await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin);
   } catch (err) {
     console.error(err);
+    throw err;
   } finally {
     client.release();
   }

@@ -40,14 +40,22 @@ export const authenticateUser = async (client, id, password) => {
   }
 };
 
-export const insertUser = async (client, id, password, email, nickname) => {
-  const insertUserQuery = `INSERT INTO users(id, password, email, nickname) VALUES($1, $2, $3, $4) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
+export const insertUser = async (
+  client,
+  id,
+  password,
+  email,
+  nickname,
+  socialLogin
+) => {
+  const insertUserQuery = `INSERT INTO users(id, password, email, nickname, socialLogin) VALUES($1, $2, $3, $4, $5) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
   try {
     const userInfo = await client.query(insertUserQuery, [
       id,
       password,
       email,
       nickname,
+      socialLogin,
     ]); // 쿼리문을 실행합니다.
     return userInfo.rows[0]; // 사용자 정보를 반환합니다.
   } catch (err) {

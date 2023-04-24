@@ -11,6 +11,8 @@ import {
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
+import { getUserById } from "./userProvider";
+import { createUser } from "./userService";
 
 const userRouter = express.Router();
 
@@ -56,12 +58,35 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       // Get the user's profile information
       let userInfo = await oauth2Client.request({
         url: "https://www.googleapis.com/oauth2/v2/userinfo",
-      }); // id, email, name, picture
+      });
+      const { id, email, name, picture } = userInfo.data;
 
       console.log(userInfo.data);
       console.log("google login success");
       userCredential = userInfo.data;
-      res.redirect(`${process.env.CLIENT_URL}/`);
+
+      // DB 확인 후 로그인 처리
+      try {
+        const exUser = await getUserById(id); // 이미 가입된 유저인지 확인
+        if (exUser) {
+          console.log("이미 가입된 유저");
+          return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+        } else {
+          const newUser = await createUser({
+            id,
+            password: id,
+            email,
+            nickname: name,
+            socialLogin: "google",
+          }); // 새로운 유저면 생성
+          console.log("새로운 유저 생성");
+          return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+        }
+      } catch (err) {
+        console.error(err);
+        return next(err);
+      }
+
       // res.redirect(`${process.env.CLIENT_URL}/login`);
       // res.redirect(`${process.env.CLIENT_URL}/login?email=${userCredential.email}&name=${userCredential.name}`);
     }
