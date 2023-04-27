@@ -33,7 +33,7 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
 });
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
-  return res.redirect(302, `${process.env.CLIENT_URL}/`); 
+  return res.redirect(302, `${process.env.CLIENT_URL}/`);
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
 
@@ -154,7 +154,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
   request.get(options, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       const accessToken = JSON.parse(body).access_token;
-      res.redirect("/users/member?access_token=" + accessToken);
+      res.redirect("/users/naver/member?access_token=" + accessToken);
     } else {
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode);
@@ -162,7 +162,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
   });
 });
 // naver 유저 정보 받아오기
-userRouter.get("/member", function (req, res) {
+userRouter.get("/naver/member", function (req, res) {
   const accessToken = req.query.access_token;
   var api_url = "https://openapi.naver.com/v1/nid/me";
   var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
@@ -191,5 +191,79 @@ userRouter.get("/member", function (req, res) {
   });
 });
 // 소셜로그인 : 카카오
+userRouter.get("/auth/kakao", (req, res) => {
+  const api_url =
+    "https://kauth.kakao.com/oauth/authorize?client_id=" +
+    process.env.KAKAO_CLIENT_ID +
+    "&redirect_uri=" +
+    process.env.KAKAO_REDIRECT_URL +
+    "&response_type=code";
+  res.writeHead(301, { Location: api_url });
+  res.end();
+});
+userRouter.get("/auth/kakao/callback", async (req, res, next) => {
+  const code = req.query.code;
+  console.log("콜백하러왔씁니다");
+  let api_url =
+    "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=" +
+    process.env.KAKAO_CLIENT_ID +
+    "&redirect_uri=" +
+    process.env.KAKAO_REDIRECT_URL +
+    "&code=" +
+    code +
+    "&client_secret=" +
+    process.env.KAKAO_CLIENT_SECRET;
+  var request = require("request");
+  let options = {
+    url: api_url,
+    headers: {
+      "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
+    },
+  };
+  request.post(options, function (error, response, body) {
+    console.log("토큰받아오기");
+    if (!error && response.statusCode == 200) {
+      const accessToken = JSON.parse(body).access_token;
+      res.redirect("/users/kakao/member?access_token=" + accessToken);
+    } else {
+      console.log("왜 에러?");
+      res.status(response.statusCode).end();
+      console.log("error = " + response.statusCode);
+    }
+  });
+});
+
+// 카카오 유저 정보 받아오기
+userRouter.get("/kakao/member", function (req, res) {
+  const accessToken = req.query.access_token;
+  var api_url = "https://kapi.kakao.com/v2/user/me";
+  var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
+  var options = {
+    url: api_url,
+    headers: { Authorization: header },
+  };
+  var request = require("request");
+  request.get(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      console.log("카카오 유저 정보 받아오기 성공");
+      const { id } = JSON.parse(body);
+      const { nickname, profile_image } = JSON.parse(body).properties;
+      const { email } = JSON.parse(body).kakao_account;
+      console.log(
+        `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
+      );
+      res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
+      res.end(body);
+
+      // DB 확인 후 로그인 처리
+    } else {
+      console.log("error");
+      if (response != null) {
+        res.status(response.statusCode).end();
+        console.log("error = " + response.statusCode);
+      }
+    }
+  });
+});
 
 export default userRouter;
