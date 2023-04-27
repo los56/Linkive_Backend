@@ -33,9 +33,7 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
 });
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
-  return res.status(200).json({
-    message: "good",
-  });
+  return res.redirect(302, `${process.env.CLIENT_URL}/`); 
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
 
