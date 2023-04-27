@@ -114,7 +114,84 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
 });
 
 // 소셜로그인 : 네이버
+userRouter.get("/auth/naver", (req, res) => {
+  const api_url =
+    "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=" +
+    process.env.NAVER_CLIENT_ID +
+    "&redirect_uri=" +
+    process.env.NAVER_REDIRECT_URL +
+    "&state=" +
+    Math.random().toString(36).substr(3, 14);
+  res.writeHead(301, { Location: api_url });
+  res.end();
+  // res.writeHead(200, { "Content-Type": "text/html;charset=utf-8" });
+  // res.end(
+  //   "<a href='" +
+  //     api_url +
+  //     "'><img height='50' src='http://static.nid.naver.com/oauth/small_g_in.PNG'/></a>"
+  // );
+});
+userRouter.get("/auth/naver/callback", async (req, res, next) => {
+  const code = req.query.code;
+  const state = req.query.state;
+  let api_url =
+    "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=" +
+    process.env.NAVER_CLIENT_ID +
+    "&client_secret=" +
+    process.env.NAVER_CLIENT_SECRET +
+    "&redirect_uri=" +
+    process.env.NAVER_REDIRECT_URL +
+    "&code=" +
+    code +
+    "&state=" +
+    state;
+  var request = require("request");
+  let options = {
+    url: api_url,
+    headers: {
+      "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID,
+      "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRET,
+    },
+  };
+  request.get(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      const accessToken = JSON.parse(body).access_token;
+      res.redirect("/users/member?access_token=" + accessToken);
+    } else {
+      res.status(response.statusCode).end();
+      console.log("error = " + response.statusCode);
+    }
+  });
+});
+// naver 유저 정보 받아오기
+userRouter.get("/member", function (req, res) {
+  const accessToken = req.query.access_token;
+  var api_url = "https://openapi.naver.com/v1/nid/me";
+  var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
+  var options = {
+    url: api_url,
+    headers: { Authorization: header },
+  };
+  var request = require("request");
+  request.get(options, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      const { id, email, nickname, profile_image } = JSON.parse(body).response;
+      console.log(
+        `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
+      );
+      res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
+      res.end(body);
 
+      // DB 확인 후 로그인 처리
+    } else {
+      console.log("error");
+      if (response != null) {
+        res.status(response.statusCode).end();
+        console.log("error = " + response.statusCode);
+      }
+    }
+  });
+});
 // 소셜로그인 : 카카오
 
 export default userRouter;
