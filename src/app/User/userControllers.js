@@ -132,9 +132,9 @@ export const socialLogin = async (id, email, nickname, platform) => {
     } else {
       const newUser = await createUser({
         id,
-        password: id,
         email,
         nickname: nickname,
+        password: null,
         socialLogin: platform,
       }); // 새로운 유저면 생성
       console.log("새로운 유저 생성");

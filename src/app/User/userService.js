@@ -5,10 +5,14 @@ import { getUserById } from "./userProvider";
 import hashPassword from "../../../utils/hashPassword";
 
 export const createUser = async (newUser) => {
-  const { id, password, email, nickname, socialLogin=null } = newUser;
+  const { id, email, nickname, password=null, socialLogin=null } = newUser;
   const client = await pool.connect();
   try {
+    if (password === null) {
+      await insertUser(client, id, password, email, nickname, socialLogin);
+    } else {
     await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin);
+    }
   } catch (err) {
     console.error(err);
     throw err;

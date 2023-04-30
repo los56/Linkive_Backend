@@ -174,8 +174,6 @@ userRouter.get("/naver/member", async (req, res) => {
           message: "로그인 처리 error",
         });
       }
-      // res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
-      // res.end(body);
     } else {
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode);
@@ -227,7 +225,7 @@ userRouter.get("/auth/kakao/callback", async (req, res, next) => {
 });
 
 // 카카오 유저 정보 받아오기
-userRouter.get("/kakao/member", function (req, res) {
+userRouter.get("/kakao/member", async function (req, res) {
   const accessToken = req.query.access_token;
   var api_url = "https://kapi.kakao.com/v2/user/me";
   var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
@@ -236,26 +234,34 @@ userRouter.get("/kakao/member", function (req, res) {
     headers: { Authorization: header },
   };
   var request = require("request");
-  request.get(options, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      console.log("카카오 유저 정보 받아오기 성공");
-      const { id } = JSON.parse(body);
-      const { nickname, profile_image } = JSON.parse(body).properties;
-      const { email } = JSON.parse(body).kakao_account;
-      console.log(
-        `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
-      );
-      res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
-      res.end(body);
-      d;
-
-      // DB 확인 후 로그인 처리
-    } else {
-      console.log("error");
-      if (response != null) {
+  request.get(options, async function (error, response, body) {
+    try {
+      if (!error && response.statusCode == 200) {
+        console.log("카카오 유저 정보 받아오기 성공");
+        const { id } = JSON.parse(body);
+        const { nickname, profile_image } = JSON.parse(body).properties;
+        const { email } = JSON.parse(body).kakao_account;
+        console.log(
+          `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
+        );
+        // DB 확인 후 로그인 처리
+        await socialLogin(id, email, nickname, "kakao");
+        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
+        res.cookie("accessToken", accessToken, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
+        });
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+      } else {
         res.status(response.statusCode).end();
         console.log("error = " + response.statusCode);
       }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        message: "로그인 처리 error",
+      });
     }
   });
 });
