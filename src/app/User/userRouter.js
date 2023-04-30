@@ -8,6 +8,7 @@ import {
   changePassword,
   changeUserInfo,
   deleteUser,
+  socialLogin,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -71,42 +72,22 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       console.log("google login success");
       userCredential = userInfo.data;
 
-      // DB 확인 후 로그인 처리
+      // 로그인 처리
       try {
-        const exUser = await getUserById(id); // 이미 가입된 유저인지 확인
-        if (exUser) {
-          console.log("이미 가입된 유저");
-          // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
-          res.cookie("accessToken", tokens.access_token, {
-            httpOnly: true,
-            secure: true,
-            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
-          });
-          return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
-        } else {
-          const newUser = await createUser({
-            id,
-            password: id,
-            email,
-            nickname: name,
-            socialLogin: "google",
-          }); // 새로운 유저면 생성
-          console.log("새로운 유저 생성");
-          // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
-          res.cookie("accessToken", tokens.access_token, {
-            httpOnly: true,
-            secure: true,
-            expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
-          });
-          return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
-        }
-      } catch (err) {
-        console.error(err);
-        return next(err);
+        await socialLogin(id, email, name, "google");
+        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
+        res.cookie("accessToken", tokens.access_token, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
+        });
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+          message: "로그인 처리 error",
+        });
       }
-
-      // res.redirect(`${process.env.CLIENT_URL}/login`);
-      // res.redirect(`${process.env.CLIENT_URL}/login?email=${userCredential.email}&name=${userCredential.name}`);
     }
   }
 });
@@ -162,7 +143,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
   });
 });
 // naver 유저 정보 받아오기
-userRouter.get("/naver/member", function (req, res) {
+userRouter.get("/naver/member", async (req, res) => {
   const accessToken = req.query.access_token;
   var api_url = "https://openapi.naver.com/v1/nid/me";
   var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
@@ -171,25 +152,37 @@ userRouter.get("/naver/member", function (req, res) {
     headers: { Authorization: header },
   };
   var request = require("request");
-  request.get(options, function (error, response, body) {
+  request.get(options, async function (error, response, body) {
     if (!error && response.statusCode == 200) {
       const { id, email, nickname, profile_image } = JSON.parse(body).response;
       console.log(
         `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
       );
-      res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
-      res.end(body);
-
       // DB 확인 후 로그인 처리
-    } else {
-      console.log("error");
-      if (response != null) {
-        res.status(response.statusCode).end();
-        console.log("error = " + response.statusCode);
+      try {
+        await socialLogin(id, email, nickname, "naver");
+        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
+        res.cookie("accessToken", accessToken, {
+          httpOnly: true,
+          secure: true,
+          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
+        });
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+          message: "로그인 처리 error",
+        });
       }
+      // res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
+      // res.end(body);
+    } else {
+      res.status(response.statusCode).end();
+      console.log("error = " + response.statusCode);
     }
   });
 });
+
 // 소셜로그인 : 카카오
 userRouter.get("/auth/kakao", (req, res) => {
   const api_url =
@@ -254,6 +247,7 @@ userRouter.get("/kakao/member", function (req, res) {
       );
       res.writeHead(200, { "Content-Type": "text/json;charset=utf-8" });
       res.end(body);
+      d;
 
       // DB 확인 후 로그인 처리
     } else {
