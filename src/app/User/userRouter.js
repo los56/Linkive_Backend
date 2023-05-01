@@ -2,6 +2,7 @@ require("dotenv").config();
 
 import express from "express";
 import { sendVerifyEmail, sendEmailUserId } from "../../../utils/sendEmail";
+import { setCookie } from "../../../utils/cookie";
 import {
   login,
   signup,
@@ -75,12 +76,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       // 로그인 처리
       try {
         await socialLogin(id, email, name, "google");
-        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
-        res.cookie("accessToken", tokens.access_token, {
-          httpOnly: true,
-          secure: true,
-          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
-        });
+        setCookie(res, "accessToken", tokens.access_token); // 쿠키에 액세스 토큰 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } catch (error) {
         console.log(error);
@@ -161,12 +157,7 @@ userRouter.get("/naver/member", async (req, res) => {
       // DB 확인 후 로그인 처리
       try {
         await socialLogin(id, email, nickname, "naver");
-        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
-        res.cookie("accessToken", accessToken, {
-          httpOnly: true,
-          secure: true,
-          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
-        });
+        setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } catch (error) {
         console.log(error);
@@ -246,12 +237,7 @@ userRouter.get("/kakao/member", async function (req, res) {
         );
         // DB 확인 후 로그인 처리
         await socialLogin(id, email, nickname, "kakao");
-        // 로그인 인증 완료 후 쿠키에 액세스 토큰 저장 및 클라이언트에게 전송
-        res.cookie("accessToken", accessToken, {
-          httpOnly: true,
-          secure: true,
-          expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15일 후 만료
-        });
+        setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } else {
         res.status(response.statusCode).end();
