@@ -10,6 +10,7 @@ import {
   changeUserInfo,
   deleteUser,
   socialLogin,
+  getUserInfoByToken
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -38,6 +39,8 @@ userRouter.get("/checkAuth", checkAuth, (req, res) => {
   return res.redirect(302, `${process.env.CLIENT_URL}/`);
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
+userRouter.get("/userInfo", getUserInfoByToken); // 회원정보 조회
+
 
 // 소셜로그인 : 구글
 userRouter.get("/auth/google", (req, res) => {

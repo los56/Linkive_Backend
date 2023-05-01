@@ -8,6 +8,7 @@ import {
 import bcrypt from "bcrypt";
 import { generateToken } from "../../../middlewares/jwtAuthorization.js";
 const jwt = require("jsonwebtoken");
+import pool from "../../../config/database.js";
 require("dotenv").config();
 
 export const login = async (req, res) => {
@@ -144,3 +145,34 @@ export const socialLogin = async (id, email, nickname, platform) => {
     // return next(err);
   }
 };
+
+export const getUserInfoByToken = async (req, res, next) => {
+  const client = await pool.connect(); // 클라이언트를 가져옵니다.
+  try {
+    // accessToken 파싱
+    let accessToken = '';
+    accessToken = req.cookies.accessToken;
+    console.log("accessToken : ", accessToken);
+    
+    if (!accessToken) {
+      // 리다이렉트
+      return res.status(302).end();
+
+    }
+    
+    // 네이버 로그인인 경우
+
+
+
+    // const userInfo = await findUserByToken(client, token); // 사용자 정보를 가져옵니다.
+    // if (!userInfo) {
+    //   return null;
+    // }
+    // return userInfo; // 사용자 정보를 반환합니다.
+    return res.end();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    client.release(); // 클라이언트를 반납합니다.
+  }
+}

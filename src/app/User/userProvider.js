@@ -48,3 +48,4 @@ export const getUserByNickname = async (nickname) => {
     client.release(); // 클라이언트를 반납합니다.
   }
 };
+
