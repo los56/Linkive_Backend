@@ -10,7 +10,7 @@ import {
   changeUserInfo,
   deleteUser,
   socialLogin,
-  getUserInfoByToken
+  getUserInfoByToken,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -40,7 +40,6 @@ userRouter.get("/checkAuth", checkAuth, (req, res) => {
 });
 userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
 userRouter.get("/userInfo", getUserInfoByToken); // 회원정보 조회
-
 
 // 소셜로그인 : 구글
 userRouter.get("/auth/google", (req, res) => {
@@ -80,6 +79,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       try {
         await socialLogin(id, email, name, "google");
         setCookie(res, "accessToken", tokens.access_token); // 쿠키에 액세스 토큰 저장
+        setCookie(res, "issuer", "google"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } catch (error) {
         console.log(error);
@@ -161,6 +161,7 @@ userRouter.get("/naver/member", async (req, res) => {
       try {
         await socialLogin(id, email, nickname, "naver");
         setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
+        setCookie(res, "issuer", "naver"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } catch (error) {
         console.log(error);
@@ -241,6 +242,7 @@ userRouter.get("/kakao/member", async function (req, res) {
         // DB 확인 후 로그인 처리
         await socialLogin(id, email, nickname, "kakao");
         setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
+        setCookie(res, "issuer", "kakao"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
       } else {
         res.status(response.statusCode).end();
