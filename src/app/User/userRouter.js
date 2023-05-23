@@ -38,7 +38,7 @@ userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
   return res.redirect(302, `${process.env.CLIENT_URL}/`);
 });
-userRouter.delete("/deleteUser", jwtAuthorization, deleteUser); // 회원탈퇴
+userRouter.post("/delete", jwtAuthorization, deleteUser); // 회원탈퇴
 userRouter.get("/userInfo", getUserInfoByToken); // 회원정보 조회
 
 // 소셜로그인 : 구글

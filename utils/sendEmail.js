@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
-import { getUserByEmail } from "../src/app/User/userProvider";
+import { getUserByEmail, getUserById } from "../src/app/User/userProvider";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -21,11 +21,25 @@ export const sendVerifyEmail = async (req, res) => {
     if (await getUserByEmail(email)) {
       return res.status(409).json({ message: "이미 가입된 이메일입니다." });
     }
-  } else if (emailAuthType === "find") {
-    // 아아디/비밀번호 찾기 할 때의 이메일 인증
+  } else if (emailAuthType === "findId") {
+    // 아아디 찾기 할 때의 이메일 인증
     if (!(await getUserByEmail(email))) {
       return res.status(409).json({ message: "가입되지 않은 이메일입니다." });
     }
+  } else if (emailAuthType == "findPw") {
+      // 비밀번호 찾기 할 때의 이메일 인증
+    const { id } = req.body;
+    const user = await getUserById(id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "해당 id의 user가 존재하지 않습니다." });
+    }
+    if (user.email !== email) {
+      return res.status(409).json({ message: "아이디와 이메일이 일치하지 않습니다" });
+    }
+    
+    
   } else {
     return res.status(400).json({ message: "이메일 인증 타입이 없습니다." });
   }
