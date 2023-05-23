@@ -62,26 +62,24 @@ export const signup = async (req, res) => {
   }
 };
 
-export const changePassword = async (req, res) => {
-  // 비밀번호 변경하는 함수
-  const { id, email, newPassword } = req.body;
-  const user = await getUserById(id);
-  if (!user) {
-    return res
-      .status(401)
-      .json({ message: "해당 id의 user가 존재하지 않습니다." });
-  } else if (user.email !== email) {
-    return res.status(401).json({ message: "이메일이 일치하지 않습니다." });
-  }
-  try {
-    await changePasswordService(id, newPassword);
-    return res.status(200).json({ message: "Password changed" });
-  } catch (err) {
-    console.error(err);
-    return res
-      .status(500)
-      .json({ message: "controller Internal server error" });
-  }
+export const findPassword = async (req, res) => {
+  // 비밀번호 찾는 함수
+    const { id, newPassword } = req.body;
+    const user = await getUserById(id);
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: "해당 id의 user가 존재하지 않습니다." });
+    }
+    try {
+      await changePasswordService(id, newPassword);
+      return res.status(200).json({ message: "Password changed" });
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(500)
+        .json({ message: "controller Internal server error" });
+    }
 };
 
 export const changeUserInfo = async (req, res) => {
@@ -150,19 +148,16 @@ export const getUserInfoByToken = async (req, res, next) => {
   const client = await pool.connect(); // 클라이언트를 가져옵니다.
   try {
     // accessToken 파싱
-    let accessToken = '';
+    let accessToken = "";
     accessToken = req.cookies.accessToken;
     console.log("accessToken : ", accessToken);
-    
+
     if (!accessToken) {
       // 리다이렉트
       return res.status(302).end();
-
     }
-    
+
     // 네이버 로그인인 경우
-
-
 
     // const userInfo = await findUserByToken(client, token); // 사용자 정보를 가져옵니다.
     // if (!userInfo) {
@@ -175,4 +170,4 @@ export const getUserInfoByToken = async (req, res, next) => {
   } finally {
     client.release(); // 클라이언트를 반납합니다.
   }
-}
+};

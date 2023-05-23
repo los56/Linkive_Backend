@@ -6,7 +6,7 @@ import { setCookie } from "../../../utils/cookie";
 import {
   login,
   signup,
-  changePassword,
+  findPassword,
   changeUserInfo,
   deleteUser,
   socialLogin,
@@ -24,7 +24,7 @@ userRouter.post("/login", login);
 userRouter.post("/signup", signup);
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
 userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
-userRouter.post("/changePassword", changePassword); // 비밀번호 변경 to do : 이메일 입력 추가
+userRouter.post("/findPassword", findPassword); // 비밀번호 찾기
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
   // jwt 토큰 인증 테스트
