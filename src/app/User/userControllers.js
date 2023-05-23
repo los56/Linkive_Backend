@@ -82,6 +82,29 @@ export const findPassword = async (req, res) => {
     }
 };
 
+export const changePassword = async (req, res) => {
+  // 비밀번호 변경하는 함수
+  const { id } = res.locals.user;
+  const {password, newPassword } = req.body;
+
+  const user = await getUserById(id);
+  // 현재 비밀번호 확인
+  if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(401).json({ message: "현재 비밀번호가 일치하지 않습니다." });
+  }
+
+  try {
+    await changePasswordService(id, newPassword);
+    return res.status(200).json({ message: "Password changed" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "controller Internal server error" });
+  }
+
+}
+
 export const changeUserInfo = async (req, res) => {
   // 유저 정보 변경하는 함수
   console.log("changeUserInfo 시작");
