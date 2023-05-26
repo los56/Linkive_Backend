@@ -11,7 +11,9 @@ import {
   deleteUser,
   socialLogin,
   getUserInfoByToken,
-  changePassword
+  changePassword,
+  checkDuplicatedId,
+  checkCurrentPw
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -30,6 +32,8 @@ userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
 userRouter.post("/findPassword", findPassword); // 비밀번호 찾기
 // userRouter.post("/changePassword", jwtAuthorization, changePassword); // 비밀번호 변경
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
+userRouter.post("/checkDuplicatedId", jwtAuthorization, checkDuplicatedId); // 아이디 중복확인
+userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 비밀번호 확인"
 
 
 // 테스트용 API

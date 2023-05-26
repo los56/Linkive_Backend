@@ -64,33 +64,35 @@ export const signup = async (req, res) => {
 
 export const findPassword = async (req, res) => {
   // 비밀번호 찾는 함수
-    const { id, newPassword } = req.body;
-    const user = await getUserById(id);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: "해당 id의 user가 존재하지 않습니다." });
-    }
-    try {
-      await changePasswordService(id, newPassword);
-      return res.status(200).json({ message: "Password changed" });
-    } catch (err) {
-      console.error(err);
-      return res
-        .status(500)
-        .json({ message: "controller Internal server error" });
-    }
+  const { id, newPassword } = req.body;
+  const user = await getUserById(id);
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "해당 id의 user가 존재하지 않습니다." });
+  }
+  try {
+    await changePasswordService(id, newPassword);
+    return res.status(200).json({ message: "Password changed" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: "controller Internal server error" });
+  }
 };
 
 export const changePassword = async (req, res) => {
   // 비밀번호 변경하는 함수
   const { id } = res.locals.user;
-  const {password, newPassword } = req.body;
+  const { password, newPassword } = req.body;
 
   const user = await getUserById(id);
   // 현재 비밀번호 확인
   if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ message: "현재 비밀번호가 일치하지 않습니다." });
+    return res
+      .status(401)
+      .json({ message: "현재 비밀번호가 일치하지 않습니다." });
   }
 
   try {
@@ -102,8 +104,7 @@ export const changePassword = async (req, res) => {
       .status(500)
       .json({ message: "controller Internal server error" });
   }
-
-}
+};
 
 export const changeUserInfo = async (req, res) => {
   // 유저 정보 변경하는 함수
@@ -112,7 +113,7 @@ export const changeUserInfo = async (req, res) => {
   const accessToken = res.locals.accessToken;
   const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
-    await changeUserInfoService(id, newNickname, newId, newPassword);   // 프로필사진 추가
+    await changeUserInfoService(id, newNickname, newId, newPassword); // 프로필사진 추가
     return res.status(200).json({
       message: "User info changed",
     });
@@ -122,6 +123,43 @@ export const changeUserInfo = async (req, res) => {
       .status(500)
       .json({ message: "controller - changeUserInfo error" });
   }
+};
+
+export const checkDuplicatedId = async (req, res) => {
+  // 아이디 중복확인하는 함수
+  const { newId } = req.body;
+  if (!newId) {
+    // 입력 아이디가 없으면
+    return res.status(400).json({ message: "Id is required" });
+  } else if (newId === res.locals.user.id) {
+    // 현재 아이디와 동일한지 확인
+    return res
+      .status(409)
+      .json({ message: "현재 아이디로 변경할 수 없습니다." });
+  }
+  try {
+    const user = await getUserById(newId);
+    if (user) {
+      return res.status(409).json({ message: "Id already exists" });
+    } else {
+      return res.status(200).json({ message: "Id available" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const checkCurrentPw = async (req, res) => {
+  // 현재 비밀번호가 일치하는지 확인하는 함수
+  const { currentPassword } = req.body;
+  const id = res.locals.user.id; // 토큰에서 id 추출
+  const user = await getUserById(id);
+  // 비밀번호 일치 확인
+  if (!bcrypt.compareSync(currentPassword, user.password)) {
+    return res.status(401).json({ message: "현재 비밀번호와 일치하지 않습니다." });
+  }
+  return res.status(200).json({ message: "현재 비밀번호와 일치합니다." });
 };
 
 export const deleteUser = async (req, res) => {
