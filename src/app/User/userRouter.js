@@ -21,13 +21,18 @@ import checkAuth from "../../../middlewares/checkAuth";
 
 const userRouter = express.Router();
 
+// 프론트에서 호출하는 API
 userRouter.post("/login", login);
 userRouter.post("/signup", signup);
+userRouter.post("/delete", jwtAuthorization, deleteUser); // 회원탈퇴
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
 userRouter.post("/findId", sendEmailUserId); // 아이디 찾기
 userRouter.post("/findPassword", findPassword); // 비밀번호 찾기
+// userRouter.post("/changePassword", jwtAuthorization, changePassword); // 비밀번호 변경
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
-userRouter.post("/changePassword", jwtAuthorization, changePassword); // 비밀번호 변경
+
+
+// 테스트용 API
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
   // jwt 토큰 인증 테스트
   return res.status(200).json({
@@ -36,12 +41,10 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
     refreshToken: res.locals.refreshToken,
   });
 });
-
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
   return res.redirect(302, `${process.env.CLIENT_URL}/`);
 });
-userRouter.post("/delete", jwtAuthorization, deleteUser); // 회원탈퇴
 userRouter.get("/userInfo", getUserInfoByToken); // 회원정보 조회
 
 // 소셜로그인 : 구글

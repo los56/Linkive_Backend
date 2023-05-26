@@ -50,18 +50,18 @@ export const changeUserInfoService = async (
   const userInfo = await getUserById(id);
   console.log("기존 유저 정보", userInfo);
 
-  const user = {
-    users_num: userInfo.users_num,
+  const newUserInfo = {
     nickname: newNickname,
-    id: newId,
+    id : newId,
     password: newPassword,
+    users_num : userInfo.users_num
   };
 
-  console.log("바꿀 정보", user);
+  console.log("바꿀 정보", newUserInfo);
   const client = await pool.connect();
   try {
     console.log("changeUserInfoService try");
-    await saveUser(client, user);
+    await saveUser(client, newUserInfo);
   } catch (err) {
     console.log("changeUserInfoService error");
     console.error(err);
