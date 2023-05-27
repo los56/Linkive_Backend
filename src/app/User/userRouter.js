@@ -13,7 +13,8 @@ import {
   getUserInfoByToken,
   changePassword,
   checkDuplicatedId,
-  checkCurrentPw
+  checkCurrentPw,
+  getProfileImg
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -34,6 +35,7 @@ userRouter.post("/findPassword", findPassword); // 비밀번호 찾기
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
 userRouter.post("/checkDuplicatedId", jwtAuthorization, checkDuplicatedId); // 아이디 중복확인
 userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 비밀번호 확인"
+userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 받기
 
 
 // 테스트용 API

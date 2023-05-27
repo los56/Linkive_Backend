@@ -231,3 +231,11 @@ export const getUserInfoByToken = async (req, res, next) => {
     client.release(); // 클라이언트를 반납합니다.
   }
 };
+
+export const getProfileImg = async (req, res) => {
+  const { id } = res.locals.user;
+  const user = await getUserById(id);
+  const profileImg = user.profile_img_url;
+  return res.status(200).json({ profileImg });
+};
+
