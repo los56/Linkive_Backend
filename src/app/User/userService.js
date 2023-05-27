@@ -5,13 +5,13 @@ import { getUserById } from "./userProvider";
 import hashPassword from "../../../utils/hashPassword";
 
 export const createUser = async (newUser) => {
-  const { id, email, nickname, password=null, socialLogin=null } = newUser;
+  const { id, email, nickname, password=null, socialLogin=null, profile_img_url=null } = newUser;
   const client = await pool.connect();
   try {
     if (password === null) {
-      await insertUser(client, id, password, email, nickname, socialLogin);
+      await insertUser(client, id, password, email, nickname, socialLogin,profile_img_url);
     } else {
-    await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin);
+    await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin,profile_img_url);
     }
   } catch (err) {
     console.error(err);
@@ -43,7 +43,8 @@ export const changeUserInfoService = async (
   id,
   newNickname,
   newId,
-  newPassword
+  newPassword,
+  newProfileImg
 ) => {
   console.log("changeUserInfoService 시작");
   console.log("id", id);
@@ -54,6 +55,7 @@ export const changeUserInfoService = async (
     nickname: newNickname,
     id : newId,
     password: newPassword,
+    profile_img_url : newProfileImg,
     users_num : userInfo.users_num
   };
 

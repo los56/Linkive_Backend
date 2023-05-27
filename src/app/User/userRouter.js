@@ -87,7 +87,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
 
       // 로그인 처리
       try {
-        await socialLogin(id, email, name, "google");
+        await socialLogin(id, email, name, "google", picture);
         setCookie(res, "accessToken", tokens.access_token); // 쿠키에 액세스 토큰 저장
         setCookie(res, "issuer", "google"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
@@ -169,7 +169,7 @@ userRouter.get("/naver/member", async (req, res) => {
       );
       // DB 확인 후 로그인 처리
       try {
-        await socialLogin(id, email, nickname, "naver");
+        await socialLogin(id, email, nickname, "naver", profile_image);
         setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
         setCookie(res, "issuer", "naver"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
@@ -250,7 +250,7 @@ userRouter.get("/kakao/member", async function (req, res) {
           `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
         );
         // DB 확인 후 로그인 처리
-        await socialLogin(id, email, nickname, "kakao");
+        await socialLogin(id, email, nickname, "kakao", profile_image);
         setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
         setCookie(res, "issuer", "kakao"); // 쿠키에 이슈어 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료

@@ -46,9 +46,10 @@ export const insertUser = async (
   password,
   email,
   nickname,
-  socialLogin
+  socialLogin,
+  profile_img_url
 ) => {
-  const insertUserQuery = `INSERT INTO users(id, password, email, nickname, socialLogin) VALUES($1, $2, $3, $4, $5) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
+  const insertUserQuery = `INSERT INTO users(id, password, email, nickname, socialLogin,profile_img_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
   try {
     const userInfo = await client.query(insertUserQuery, [
       id,
@@ -56,6 +57,7 @@ export const insertUser = async (
       email,
       nickname,
       socialLogin,
+      profile_img_url
     ]); // 쿼리문을 실행합니다.
     return userInfo.rows[0]; // 사용자 정보를 반환합니다.
   } catch (err) {
@@ -65,12 +67,13 @@ export const insertUser = async (
 
 export const saveUser = async (client, user) => {
   console.log("saveUser 시작");
-  const saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $3 WHERE users_num = $4`;
+  const saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $3, profile_img_url = $4 WHERE users_num = $5`;
   try {
     await client.query(saveUserQuery, [
       user.nickname,
       user.id,
       await hashPassword(user.password),
+      user.profile_img_url,
       user.users_num,
     ]); // 쿼리문을 실행합니다.
     console.log("saveUser 성공");

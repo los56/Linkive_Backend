@@ -109,11 +109,11 @@ export const changePassword = async (req, res) => {
 export const changeUserInfo = async (req, res) => {
   // 유저 정보 변경하는 함수
   console.log("changeUserInfo 시작");
-  const { newNickname, newId, newPassword } = req.body; // 프로필사진 추가
+  const { newNickname, newId, newPassword, newProfileImg } = req.body; // 프로필사진 추가
   const accessToken = res.locals.accessToken;
   const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
-    await changeUserInfoService(id, newNickname, newId, newPassword); // 프로필사진 추가
+    await changeUserInfoService(id, newNickname, newId, newPassword, newProfileImg); // 프로필사진 추가
     return res.status(200).json({
       message: "User info changed",
     });
@@ -181,7 +181,7 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export const socialLogin = async (id, email, nickname, platform) => {
+export const socialLogin = async (id, email, nickname, platform, profile_img_url) => {
   // DB 확인 후 로그인 처리
   try {
     const exUser = await getUserById(id); // 이미 가입된 유저인지 확인
@@ -194,6 +194,7 @@ export const socialLogin = async (id, email, nickname, platform) => {
         nickname: nickname,
         password: null,
         socialLogin: platform,
+        profile_img_url
       }); // 새로운 유저면 생성
       console.log("새로운 유저 생성");
     }
