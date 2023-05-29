@@ -45,6 +45,19 @@ export const login = async (req, res) => {
   }
 };
 
+// 로그아웃
+export const logout = async (req, res) => {
+  // 토큰을 쿠키에서 삭제합니다.
+  const cookieOptions = {
+    expires: new Date(0),
+    // httpOnly: true,
+  };
+  res.cookie("accessToken", "", cookieOptions); // 이 부분 수정
+  res.cookie("refreshToken", "", cookieOptions); // 이 부분 수정
+  res.cookie("issuer", "", cookieOptions); // 이 부분 수정
+  return res.status(200).json({ message: "로그아웃 성공" });
+};
+
 export const signup = async (req, res) => {
   // 회원가입하는 함수
   const { id, password, email, nickname } = req.body;

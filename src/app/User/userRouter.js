@@ -5,6 +5,7 @@ import { sendVerifyEmail, sendEmailUserId } from "../../../utils/sendEmail";
 import { setCookie } from "../../../utils/cookie";
 import {
   login,
+  logout,
   signup,
   findPassword,
   changeUserInfo,
@@ -26,6 +27,7 @@ const userRouter = express.Router();
 
 // 프론트에서 호출하는 API
 userRouter.post("/login", login);
+userRouter.post("/logout", logout);
 userRouter.post("/signup", signup);
 userRouter.post("/delete", jwtAuthorization, deleteUser); // 회원탈퇴
 userRouter.post("/verifyEmail/send", sendVerifyEmail); // 이메일 인증번호 보내기
