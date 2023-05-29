@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
 
 export const jwtAuthorization = async (req, res, next) => {
-  // accessToeken을 검증하는 미들웨어
-  const accessToken = req.headers.authorization?.split(" ")[1];
+  // 헤더의 accessToeken을 검증하는 미들웨어
+  let accessToken = req.headers.authorization?.split(" ")[1];
+  // 또는 쿠키의 accessToken 파싱
+  if (!accessToken) {
+  accessToken = req.cookies.accessToken;}
 
   if (!accessToken) {
     return res.status(401).json({ message: "Access token not provided" });
@@ -45,6 +48,7 @@ export const jwtAuthorization = async (req, res, next) => {
       res.locals.accessToken = accessToken;
       res.locals.refreshToken = req.headers["refresh-token"];
       res.locals.user = user;
+      console.log(`jwtAuthorization 완료`);
       console.log(user);
       next(); // Access Token 유효할 때도 next() 함수 호출
     }

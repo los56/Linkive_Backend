@@ -36,6 +36,7 @@ userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원�
 userRouter.post("/checkDuplicatedId", jwtAuthorization, checkDuplicatedId); // 아이디 중복확인
 userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 비밀번호 확인"
 userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 return
+userRouter.get("/userInfo", jwtAuthorization, getUserInfoByToken); // 회원정보 조회
 
 
 
@@ -51,7 +52,6 @@ userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
   return res.redirect(302, `${process.env.CLIENT_URL}/`);
 });
-userRouter.get("/userInfo", getUserInfoByToken); // 회원정보 조회
 
 // 소셜로그인 : 구글
 userRouter.get("/auth/google", (req, res) => {

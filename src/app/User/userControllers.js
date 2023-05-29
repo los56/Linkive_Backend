@@ -25,7 +25,7 @@ export const login = async (req, res) => {
 
     // 비밀번호가 일치하는지 확인합니다.
     const isPasswordMatch = bcrypt.compareSync(password, user.password);
-    
+
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
     }
@@ -214,24 +214,16 @@ export const socialLogin = async (id, email, nickname, platform, profile_img_url
 export const getUserInfoByToken = async (req, res, next) => {
   const client = await pool.connect(); // 클라이언트를 가져옵니다.
   try {
-    // accessToken 파싱
-    let accessToken = "";
-    accessToken = req.cookies.accessToken;
-    console.log("accessToken : ", accessToken);
-
-    if (!accessToken) {
-      // 리다이렉트
-      return res.status(302).end();
+    const id = res.locals.user.id;
+    let userInfo = await getUserById(id);
+    userInfo = {
+      id: userInfo.id,
+      nickname: userInfo.nickname,
+      email: userInfo.email,
+      profile_img_url: userInfo.profile_img_url,
+      socialLogin: userInfo.socialLogin,
     }
-
-    // 네이버 로그인인 경우
-
-    // const userInfo = await findUserByToken(client, token); // 사용자 정보를 가져옵니다.
-    // if (!userInfo) {
-    //   return null;
-    // }
-    // return userInfo; // 사용자 정보를 반환합니다.
-    return res.end();
+    return res.status(200).json({ userInfo });
   } catch (err) {
     console.error(err);
   } finally {
