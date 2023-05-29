@@ -6,6 +6,7 @@ import {
   deleteUserService,
 } from "./userService";
 import bcrypt from "bcrypt";
+import {setCookie} from "../../../utils/cookie.js";
 import { generateToken } from "../../../middlewares/jwtAuthorization.js";
 const jwt = require("jsonwebtoken");
 import pool from "../../../config/database.js";
@@ -24,17 +25,23 @@ export const login = async (req, res) => {
 
     // 비밀번호가 일치하는지 확인합니다.
     const isPasswordMatch = bcrypt.compareSync(password, user.password);
-
+    
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
     // 토큰을 생성합니다.
     const { accessToken, refreshToken } = await generateToken(user);
+    console.log(`accessToken: ${accessToken}`);
+    console.log(`refreshToken: ${refreshToken}`);
+    // 토큰을 쿠키에 저장합니다.
+    setCookie(res, "accessToken", accessToken);
+    setCookie(res, "refreshToken", refreshToken);
+
     return res.status(200).json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "로그인 server error" });
   }
 };
 

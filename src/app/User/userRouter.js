@@ -35,16 +35,16 @@ userRouter.post("/findPassword", findPassword); // 비밀번호 찾기
 userRouter.post("/changeUserInfo", jwtAuthorization, changeUserInfo); // 회원정보 변경, to do : 프로필사진변경
 userRouter.post("/checkDuplicatedId", jwtAuthorization, checkDuplicatedId); // 아이디 중복확인
 userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 비밀번호 확인"
-userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 받기
+userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 return
+
 
 
 // 테스트용 API
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
   // jwt 토큰 인증 테스트
-  return res.status(200).json({
-    message: "good",
-    accessToken: res.locals.accessToken,
-    refreshToken: res.locals.refreshToken,
+  console.log("jwtAuthorization");
+    return res.status(200).json({
+    message: "good"
   });
 });
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
@@ -144,6 +144,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
     },
   };
   request.get(options, function (error, response, body) {
+    console.log(`토큰 : ${body}}`);
     if (!error && response.statusCode == 200) {
       const accessToken = JSON.parse(body).access_token;
       res.redirect("/users/naver/member?access_token=" + accessToken);
@@ -220,6 +221,7 @@ userRouter.get("/auth/kakao/callback", async (req, res, next) => {
   };
   request.post(options, function (error, response, body) {
     console.log("토큰받아오기");
+    console.log(body);
     if (!error && response.statusCode == 200) {
       const accessToken = JSON.parse(body).access_token;
       res.redirect("/users/kakao/member?access_token=" + accessToken);

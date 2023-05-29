@@ -11,7 +11,10 @@ const cookieParser = require("cookie-parser");
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
 app.use(express.urlencoded({ extended: false })); // form 데이터를 받기 위해
-app.use(cors()); // cors 설정
+app.use(cors({
+  origin: 'http://localhost:3000', // 클라이언트의 도메인을 적어주세요
+  credentials: true, // 쿠키를 포함한 요청을 허용합니다.
+}));
 app.use(logger); // 로그를 남기기 위해
 app.use(cookieParser()); // 쿠키를 사용하기 위해
 app.use(function (req, res, next) {
