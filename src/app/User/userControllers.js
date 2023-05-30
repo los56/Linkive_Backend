@@ -6,7 +6,7 @@ import {
   deleteUserService,
 } from "./userService";
 import bcrypt from "bcrypt";
-import {setCookie} from "../../../utils/cookie.js";
+import { setCookie, deleteCookie } from "../../../utils/cookie.js";
 import { generateToken } from "../../../middlewares/jwtAuthorization.js";
 const jwt = require("jsonwebtoken");
 import pool from "../../../config/database.js";
@@ -32,12 +32,12 @@ export const login = async (req, res) => {
 
     // 토큰을 생성합니다.
     const { accessToken, refreshToken } = await generateToken(user);
-    console.log(`accessToken: ${accessToken}`);
-    console.log(`refreshToken: ${refreshToken}`);
+    // console.log(`accessToken: ${accessToken}`);
+    // console.log(`refreshToken: ${refreshToken}`);
     // 토큰을 쿠키에 저장합니다.
     setCookie(res, "accessToken", accessToken);
     setCookie(res, "refreshToken", refreshToken);
-
+    console.log(`로그인 완료`);
     return res.status(200).json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
@@ -48,13 +48,7 @@ export const login = async (req, res) => {
 // 로그아웃
 export const logout = async (req, res) => {
   // 토큰을 쿠키에서 삭제합니다.
-  const cookieOptions = {
-    expires: new Date(0),
-    // httpOnly: true,
-  };
-  res.cookie("accessToken", "", cookieOptions); // 이 부분 수정
-  res.cookie("refreshToken", "", cookieOptions); // 이 부분 수정
-  res.cookie("issuer", "", cookieOptions); // 이 부분 수정
+  deleteCookie(res);
   return res.status(200).json({ message: "로그아웃 성공" });
 };
 
@@ -133,7 +127,13 @@ export const changeUserInfo = async (req, res) => {
   const accessToken = res.locals.accessToken;
   const id = jwt.verify(accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
   try {
-    await changeUserInfoService(id, newNickname, newId, newPassword, newProfileImg); // 프로필사진 추가
+    await changeUserInfoService(
+      id,
+      newNickname,
+      newId,
+      newPassword,
+      newProfileImg
+    ); // 프로필사진 추가
     return res.status(200).json({
       message: "User info changed",
     });
@@ -177,23 +177,26 @@ export const checkCurrentPw = async (req, res) => {
   const user = await getUserById(id);
   // 비밀번호 일치 확인
   if (!bcrypt.compareSync(currentPassword, user.password)) {
-    return res.status(401).json({ message: "현재 비밀번호와 일치하지 않습니다." });
+    return res
+      .status(401)
+      .json({ message: "현재 비밀번호와 일치하지 않습니다." });
   }
   return res.status(200).json({ message: "현재 비밀번호와 일치합니다." });
 };
 
 export const deleteUser = async (req, res) => {
-  const id = jwt.verify(res.locals.accessToken, process.env.JWT_SECRET).id; // 토큰에서 id 추출
+  const id = res.locals.user.id; // 토큰에서 id 추출
   const user = await getUserById(id);
   const { email, password } = req.body;
   if (user.email !== email) {
-    return res.status(401).json({ message: "이메일이 일치하지 않습니다." });
+    return res.status(404).json({ message: "이메일이 일치하지 않습니다." });
   } else if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
+    return res.status(1401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
   try {
     await deleteUserService(id);
+    deleteCookie(res);
     return res.status(200).json({ message: "User deleted" });
   } catch (err) {
     console.error(err);
@@ -201,43 +204,53 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export const socialLogin = async (id, email, nickname, platform, profile_img_url) => {
-  // DB 확인 후 로그인 처리
-  try {
-    const exUser = await getUserById(id); // 이미 가입된 유저인지 확인
-    if (exUser) {
+export const socialLogin = async (
+  id,
+  email,
+  nickname,
+  platform,
+  profile_img_url
+) => {
+  // 가입유저인지 DB 확인
+  try { 
+    const exUser = await getUserById(id);
+    if (exUser) { // 가입된 유저면 pass
       console.log("이미 가입된 유저");
     } else {
+      // 새로운 유저면 생성
       const newUser = await createUser({
         id,
         email,
-        nickname: nickname,
+        nickname,
         password: null,
         socialLogin: platform,
-        profile_img_url
-      }); // 새로운 유저면 생성
+        profile_img_url,
+      });
       console.log("새로운 유저 생성");
     }
+    // 토큰 발급
+    const token = generateToken({id, email, nickname})
+    return token;
   } catch (err) {
     console.error(err);
-    // return next(err);
   }
 };
 
-export const getUserInfoByToken = async (req, res, next) => {
+export const getUserInfoByToken = async (req, res) => {
   const client = await pool.connect(); // 클라이언트를 가져옵니다.
   try {
     const id = res.locals.user.id;
     let userInfo = await getUserById(id);
-    userInfo = {
+    userInfo = {  // 필요한 정보만 추출
       id: userInfo.id,
       nickname: userInfo.nickname,
       email: userInfo.email,
       profile_img_url: userInfo.profile_img_url,
       socialLogin: userInfo.socialLogin,
-    }
+    };
     return res.status(200).json({ userInfo });
   } catch (err) {
+    console.log("getUserInfoByToken error");
     console.error(err);
   } finally {
     client.release(); // 클라이언트를 반납합니다.
@@ -250,4 +263,3 @@ export const getProfileImg = async (req, res) => {
   const profileImg = user.profile_img_url;
   return res.status(200).json({ profileImg });
 };
-

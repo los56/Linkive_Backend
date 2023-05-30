@@ -5,8 +5,9 @@ export const jwtAuthorization = async (req, res, next) => {
   let accessToken = req.headers.authorization?.split(" ")[1];
   // 또는 쿠키의 accessToken 파싱
   if (!accessToken) {
-  accessToken = req.cookies.accessToken;}
-
+    accessToken = req.cookies.accessToken;
+  }
+  // 그래도 없으면
   if (!accessToken) {
     return res.status(401).json({ message: "Access token not provided" });
   }

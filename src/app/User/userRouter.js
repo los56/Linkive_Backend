@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 import express from "express";
+const request = require("request");
 import { sendVerifyEmail, sendEmailUserId } from "../../../utils/sendEmail";
 import { setCookie } from "../../../utils/cookie";
 import {
@@ -107,26 +108,21 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
 
 // 소셜로그인 : 네이버
 userRouter.get("/auth/naver", (req, res) => {
-  const api_url =
+  const api_url = // 네이버 로그인 인증 요청
     "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=" +
     process.env.NAVER_CLIENT_ID +
     "&redirect_uri=" +
     process.env.NAVER_REDIRECT_URL +
     "&state=" +
     Math.random().toString(36).substr(3, 14);
-  res.writeHead(301, { Location: api_url });
+  res.writeHead(301, { Location: api_url });  // redirect
   res.end();
-  // res.writeHead(200, { "Content-Type": "text/html;charset=utf-8" });
-  // res.end(
-  //   "<a href='" +
-  //     api_url +
-  //     "'><img height='50' src='http://static.nid.naver.com/oauth/small_g_in.PNG'/></a>"
-  // );
 });
+// 네이버 로그인 콜백
 userRouter.get("/auth/naver/callback", async (req, res, next) => {
   const code = req.query.code;
   const state = req.query.state;
-  let api_url =
+  const api_url = // 네이버 로그인 토큰 요청 API
     "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=" +
     process.env.NAVER_CLIENT_ID +
     "&client_secret=" +
@@ -137,47 +133,48 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
     code +
     "&state=" +
     state;
-  var request = require("request");
-  let options = {
+  const options = {
     url: api_url,
     headers: {
       "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID,
       "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRET,
     },
   };
-  request.get(options, function (error, response, body) {
-    console.log(`토큰 : ${body}}`);
-    if (!error && response.statusCode == 200) {
+  // 네이버 로그인 토큰 요청
+  request.get(options, function (error, response, body) { 
+    console.log(`토큰 : ${body}`);  // access_token, refresh_token, token_type, expires_in 1H
+    if (!error && response.statusCode == 200) { // 토큰 요청 성공
       const accessToken = JSON.parse(body).access_token;
-      res.redirect("/users/naver/member?access_token=" + accessToken);
+      // 네이버 유저 정보 요청 라우터로 redirect
+      res.redirect("/users/naver/member?access_token=" + accessToken);  
     } else {
       res.status(response.statusCode).end();
-      console.log("error = " + response.statusCode);
+      console.log("error = " + response.statusCode, error);
     }
   });
 });
 // naver 유저 정보 받아오기
 userRouter.get("/naver/member", async (req, res) => {
   const accessToken = req.query.access_token;
-  var api_url = "https://openapi.naver.com/v1/nid/me";
-  var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
-  var options = {
+  const api_url = "https://openapi.naver.com/v1/nid/me";  // 네이버 유저 정보 요청 API
+  const header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
+  const options = {
     url: api_url,
     headers: { Authorization: header },
   };
-  var request = require("request");
+  // 네이버 유저 정보 요청
   request.get(options, async function (error, response, body) {
-    if (!error && response.statusCode == 200) {
+    if (!error && response.statusCode == 200) { // 유저 정보 요청 성공
       const { id, email, nickname, profile_image } = JSON.parse(body).response;
       console.log(
         `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
       );
       // DB 확인 후 로그인 처리
       try {
-        await socialLogin(id, email, nickname, "naver", profile_image);
-        setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
-        setCookie(res, "issuer", "naver"); // 쿠키에 이슈어 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+        const tokens = await socialLogin(id, email, nickname, "naver", profile_image);
+        setCookie(res, "accessToken", tokens.accessToken); // 쿠키에 jwt 토큰 저장
+        setCookie(res, "refreshToken", tokens.refreshToken); // 쿠키에 리프레시 토큰 저장
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
       } catch (error) {
         console.log(error);
         return res.status(500).json({

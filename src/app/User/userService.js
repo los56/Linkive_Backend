@@ -9,9 +9,9 @@ export const createUser = async (newUser) => {
   const client = await pool.connect();
   try {
     if (password === null) {
-      await insertUser(client, id, password, email, nickname, socialLogin,profile_img_url);
+      await insertUser(client, id, password, email, nickname, socialLogin, profile_img_url);
     } else {
-    await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin,profile_img_url);
+    await insertUser(client, id, await hashPassword(password), email, nickname, socialLogin, profile_img_url);
     }
   } catch (err) {
     console.error(err);

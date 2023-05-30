@@ -49,7 +49,7 @@ export const insertUser = async (
   socialLogin,
   profile_img_url
 ) => {
-  const insertUserQuery = `INSERT INTO users(id, password, email, nickname, socialLogin,profile_img_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
+  const insertUserQuery = `INSERT INTO users(id, password, email, nickname, socialLogin, profile_img_url) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`; // 사용자 정보를 생성하는 쿼리문을 정의합니다.
   try {
     const userInfo = await client.query(insertUserQuery, [
       id,
