@@ -13,15 +13,12 @@ import {
   deleteUser,
   socialLogin,
   getUserInfoByToken,
-  changePassword,
   checkDuplicatedId,
   checkCurrentPw,
   getProfileImg,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
-import { getUserById } from "./userProvider";
-import { createUser } from "./userService";
 import checkAuth from "../../../middlewares/checkAuth";
 
 const userRouter = express.Router();
@@ -59,13 +56,12 @@ userRouter.get("/auth/google", (req, res) => {
   res.writeHead(301, { Location: authorizationUrl });
   res.end();
 });
+// 구글 로그인 콜백
 userRouter.get("/auth/google/callback", async (req, res, next) => {
-  console.log("google callback");
-
   const url = require("url");
   // Receive the callback from Google's OAuth 2.0 server.
   if (req.url.startsWith("/auth/google/callback")) {
-    let userCredential = null;
+    let userCredential = null;  // 구글 로그인 유저 정보
     // Handle the OAuth 2.0 server response
     let q = url.parse(req.url, true).query;
     if (q.error) {
@@ -73,27 +69,22 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
       console.log("Error:" + q.error);
     } else {
       // Get access and refresh tokens (if access_type is offline)
-      let { tokens } = await oauth2Client.getToken(q.code);
-      oauth2Client.setCredentials(tokens);
-      console.log(tokens);
-      console.log(tokens.access_token);
+      let { tokens } = await oauth2Client.getToken(q.code); // access_token, scope, token_type, id_token, expiry_date
+      oauth2Client.setCredentials(tokens);  // API 접근을 위해 인증 토큰 설정
 
       // Get the user's profile information
       let userInfo = await oauth2Client.request({
         url: "https://www.googleapis.com/oauth2/v2/userinfo",
       });
-      const { id, email, name, picture } = userInfo.data;
-
-      console.log(userInfo.data);
-      console.log("google login success");
       userCredential = userInfo.data;
+      const { id, email, name, picture } = userCredential; // 필요한 정보만 추출
 
       // 로그인 처리
       try {
-        await socialLogin(id, email, name, "google", picture);
-        setCookie(res, "accessToken", tokens.access_token); // 쿠키에 액세스 토큰 저장
-        setCookie(res, "issuer", "google"); // 쿠키에 이슈어 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
+        const jwtTokens = await socialLogin(id, email, name, "google", picture);
+        setCookie(res, "accessToken", jwtTokens.accessToken); // 쿠키에 jwt 토큰 저장
+        setCookie(res, "refreshToken", jwtTokens.refreshToken); // 쿠키에 리프레시 토큰 저장
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
       } catch (error) {
         console.log(error);
         return res.status(500).json({
