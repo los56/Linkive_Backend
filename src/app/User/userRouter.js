@@ -16,7 +16,7 @@ import {
   changePassword,
   checkDuplicatedId,
   checkCurrentPw,
-  getProfileImg
+  getProfileImg,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -41,14 +41,12 @@ userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 
 userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 return
 userRouter.get("/userInfo", jwtAuthorization, getUserInfoByToken); // 회원정보 조회
 
-
-
 // 테스트용 API
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
   // jwt 토큰 인증 테스트
   console.log("jwtAuthorization");
-    return res.status(200).json({
-    message: "good"
+  return res.status(200).json({
+    message: "good",
   });
 });
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
@@ -115,7 +113,7 @@ userRouter.get("/auth/naver", (req, res) => {
     process.env.NAVER_REDIRECT_URL +
     "&state=" +
     Math.random().toString(36).substr(3, 14);
-  res.writeHead(301, { Location: api_url });  // redirect
+  res.writeHead(301, { Location: api_url }); // redirect
   res.end();
 });
 // 네이버 로그인 콜백
@@ -141,12 +139,13 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
     },
   };
   // 네이버 로그인 토큰 요청
-  request.get(options, function (error, response, body) { 
-    console.log(`토큰 : ${body}`);  // access_token, refresh_token, token_type, expires_in 1H
-    if (!error && response.statusCode == 200) { // 토큰 요청 성공
+  request.get(options, function (error, response, body) {
+    console.log(`토큰 : ${body}`); // access_token, refresh_token, token_type, expires_in 1H
+    if (!error && response.statusCode == 200) {
+      // 토큰 요청 성공
       const accessToken = JSON.parse(body).access_token;
       // 네이버 유저 정보 요청 라우터로 redirect
-      res.redirect("/users/naver/member?access_token=" + accessToken);  
+      res.redirect("/users/naver/member?access_token=" + accessToken);
     } else {
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode, error);
@@ -156,7 +155,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
 // naver 유저 정보 받아오기
 userRouter.get("/naver/member", async (req, res) => {
   const accessToken = req.query.access_token;
-  const api_url = "https://openapi.naver.com/v1/nid/me";  // 네이버 유저 정보 요청 API
+  const api_url = "https://openapi.naver.com/v1/nid/me"; // 네이버 유저 정보 요청 API
   const header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
   const options = {
     url: api_url,
@@ -164,14 +163,18 @@ userRouter.get("/naver/member", async (req, res) => {
   };
   // 네이버 유저 정보 요청
   request.get(options, async function (error, response, body) {
-    if (!error && response.statusCode == 200) { // 유저 정보 요청 성공
+    if (!error && response.statusCode == 200) {
+      // 유저 정보 요청 성공
       const { id, email, nickname, profile_image } = JSON.parse(body).response;
-      console.log(
-        `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
-      );
       // DB 확인 후 로그인 처리
       try {
-        const tokens = await socialLogin(id, email, nickname, "naver", profile_image);
+        const tokens = await socialLogin(
+          id,
+          email,
+          nickname,
+          "naver",
+          profile_image
+        );
         setCookie(res, "accessToken", tokens.accessToken); // 쿠키에 jwt 토큰 저장
         setCookie(res, "refreshToken", tokens.refreshToken); // 쿠키에 리프레시 토큰 저장
         return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
@@ -190,7 +193,7 @@ userRouter.get("/naver/member", async (req, res) => {
 
 // 소셜로그인 : 카카오
 userRouter.get("/auth/kakao", (req, res) => {
-  const api_url =
+  const api_url = // 카카오 로그인 인증 요청 API
     "https://kauth.kakao.com/oauth/authorize?client_id=" +
     process.env.KAKAO_CLIENT_ID +
     "&redirect_uri=" +
@@ -201,8 +204,7 @@ userRouter.get("/auth/kakao", (req, res) => {
 });
 userRouter.get("/auth/kakao/callback", async (req, res, next) => {
   const code = req.query.code;
-  console.log("콜백하러왔씁니다");
-  let api_url =
+  const api_url = // 카카오 로그인 토큰 요청 API
     "https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=" +
     process.env.KAKAO_CLIENT_ID +
     "&redirect_uri=" +
@@ -211,21 +213,21 @@ userRouter.get("/auth/kakao/callback", async (req, res, next) => {
     code +
     "&client_secret=" +
     process.env.KAKAO_CLIENT_SECRET;
-  var request = require("request");
-  let options = {
+  const options = {
     url: api_url,
     headers: {
       "Content-type": "application/x-www-form-urlencoded;charset=utf-8",
     },
   };
+  // 카카오 로그인 토큰 요청
   request.post(options, function (error, response, body) {
-    console.log("토큰받아오기");
-    console.log(body);
+    console.log(`토큰 : ${body}`);
     if (!error && response.statusCode == 200) {
+      // 토큰 요청 성공
       const accessToken = JSON.parse(body).access_token;
+      // 카카오 유저 정보 요청 라우터로 redirect
       res.redirect("/users/kakao/member?access_token=" + accessToken);
     } else {
-      console.log("왜 에러?");
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode);
     }
@@ -235,37 +237,40 @@ userRouter.get("/auth/kakao/callback", async (req, res, next) => {
 // 카카오 유저 정보 받아오기
 userRouter.get("/kakao/member", async function (req, res) {
   const accessToken = req.query.access_token;
-  var api_url = "https://kapi.kakao.com/v2/user/me";
+  var api_url = "https://kapi.kakao.com/v2/user/me"; // 카카오 유저 정보 요청 API
   var header = "Bearer " + accessToken; // Bearer 다음에 공백 추가
   var options = {
     url: api_url,
     headers: { Authorization: header },
   };
-  var request = require("request");
+  // 카카오 유저 정보 요청
   request.get(options, async function (error, response, body) {
-    try {
-      if (!error && response.statusCode == 200) {
-        console.log("카카오 유저 정보 받아오기 성공");
-        const { id } = JSON.parse(body);
-        const { nickname, profile_image } = JSON.parse(body).properties;
-        const { email } = JSON.parse(body).kakao_account;
-        console.log(
-          `user info - id : ${id}, email : ${email}, nickname : ${nickname}, profile_img : ${profile_image}`
+    if (!error && response.statusCode == 200) {
+      // 유저 정보 요청 성공
+      const { id } = JSON.parse(body);
+      const { nickname, profile_image } = JSON.parse(body).properties;
+      const { email } = JSON.parse(body).kakao_account;
+      // DB 확인 후 로그인 처리
+      try {
+        const tokens = await socialLogin(
+          id,
+          email,
+          nickname,
+          "kakao",
+          profile_image
         );
-        // DB 확인 후 로그인 처리
-        await socialLogin(id, email, nickname, "kakao", profile_image);
-        setCookie(res, "accessToken", accessToken); // 쿠키에 액세스 토큰 저장
-        setCookie(res, "issuer", "kakao"); // 쿠키에 이슈어 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료
-      } else {
-        res.status(response.statusCode).end();
-        console.log("error = " + response.statusCode);
+        setCookie(res, "accessToken", tokens.accessToken); // 쿠키에 jwt 토큰 저장
+        setCookie(res, "refreshToken", tokens.refreshToken); // 쿠키에 리프레시 토큰 저장
+        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+          message: "로그인 처리 error",
+        });
       }
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-        message: "로그인 처리 error",
-      });
+    } else {
+      res.status(response.statusCode).end();
+      console.log("error = " + response.statusCode);
     }
   });
 });
