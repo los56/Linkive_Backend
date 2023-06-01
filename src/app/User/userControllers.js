@@ -177,6 +177,7 @@ export const checkCurrentPw = async (req, res) => {
   const user = await getUserById(id);
   // 비밀번호 일치 확인
   if (!bcrypt.compareSync(currentPassword, user.password)) {
+    console.log("현재 비밀번호와 일치하지 않습니다.");
     return res
       .status(401)
       .json({ message: "현재 비밀번호와 일치하지 않습니다." });
@@ -262,4 +263,15 @@ export const getProfileImg = async (req, res) => {
   const user = await getUserById(id);
   const profileImg = user.profile_img_url;
   return res.status(200).json({ profileImg });
+};
+
+export const checkIdwithEmail = async (req, res) => {
+  const {id, email} = req.body;
+  const user = await getUserById(id);
+  if (!user) {
+    return res.status(401).json({ message: "해당 id의 user가 존재하지 않습니다." });
+  } else if (user.email !== email) {
+    return res.status(409).json({ message: "아이디와 이메일이 일치하지 않습니다." });
+  }
+  return res.status(200).json({ message: "아이디와 이메일이 일치합니다." });
 };

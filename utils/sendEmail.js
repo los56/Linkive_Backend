@@ -36,7 +36,7 @@ export const sendVerifyEmail = async (req, res) => {
         .json({ message: "해당 id의 user가 존재하지 않습니다." });
     }
     if (user.email !== email) {
-      return res.status(409).json({ message: "아이디와 이메일이 일치하지 않습니다" });
+      return res.status(409).json({ message: "아이디와 이메일이 일치하지 않습니다." });
     }
     
     

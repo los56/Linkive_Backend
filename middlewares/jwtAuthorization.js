@@ -9,6 +9,7 @@ export const jwtAuthorization = async (req, res, next) => {
   }
   // 그래도 없으면
   if (!accessToken) {
+    console.log(`Access Token이 없습니다.`);
     return res.status(401).json({ message: "Access token not provided" });
   }
 
