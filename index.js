@@ -3,14 +3,11 @@ import cors from "cors";
 require("dotenv").config(); // .env 파일을 읽어서 process.env에 넣어줌
 import morgan from "morgan"; // 로그를 남기는 미들웨어
 import pool from "./config/database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
-import userRouter from "./src/app/User/userRouter"; // userRouter를 가져옵니다.
-
-// NamHyeok's Routers
-const imageRouter = require('./src/app/Image/imageRouter');
-const memoRouter = require('./src/app/Memo/memoRouter');
 
 const app = express();
 const logger = morgan("dev");
+
+const api = require('./src/app/apiRouter');
 
 // 기본설정
 app.use(express.json()); // json 형태의 데이터를 받기 위해
@@ -23,18 +20,11 @@ app.use(
   })
 ); // cors 설정
 app.use(logger); // 로그를 남기기 위해
-
-const {swaggerUi, specs} = require("./config/swagger");
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(specs));
-
 // Get real IP
 app.set('trust proxy', true);
 
 // 라우터 설정
-
-app.use("/users", userRouter);
-app.use("/images", imageRouter);
-app.use("/memos", memoRouter);
+app.use('/api', api);
 
 // 서버 실행
 app.listen(process.env.PORT, '0.0.0.0', () => {

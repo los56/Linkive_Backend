@@ -101,5 +101,5 @@ dist
 
 # Docker Images
 build
-
 node_modules
+docker/.dockerenv

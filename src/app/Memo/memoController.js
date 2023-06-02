@@ -2,8 +2,10 @@ const pool = require("../../../config/database").default;
 const { findUserById } = require("../User/userDao");
 const promiseErrorHandle = require("../../../utils/promiseErrorHandle");
 
+const bcrypt = require('bcrypt');
+
 exports.createMemo = (req, res) => {
-    const insertQuery = `INSERT INTO memos(owner, link, title, content, date_created, users_num, folder_num) VALUES ($1, $2, $3, $4, NOW(), 0, $5) RETURNING memo_num`
+    const insertQuery = `INSERT INTO memos(owner, link, title, content, date_created, folder_num) VALUES ($1, $2, $3, $4, NOW(), $5) RETURNING memo_num`
 
     const { user } = res.locals;
     const { link, title, content, folder_num } = req.body;
@@ -112,11 +114,13 @@ exports.deleteMemo = (req, res) => {
     });
 }
 
-exports.requestMemo = (req, res) => {
-    const requestQuery = `SELECT * FROM memos WHERE owner = $1`;
 
+const { getFolderList } = require('../Folder/folderUtils');
+const { getMemoListWithFolderName } = require('../Memo/memoUtils');
+
+exports.requestMemo = (req, res) => {
     const { user } = res.locals;
-    let users_num;
+    let users_num, folderList, memoList;
 
     pool.connect((err, client, release) => {
        if(err) {
@@ -125,16 +129,14 @@ exports.requestMemo = (req, res) => {
        }
 
        findUserById(client, user.id).then(userData => {
-           if(!userData) {
-                throw {code: 401, message: "Wrong userdata"};
+           if (!userData) {
+               throw {code: 401, message: "Wrong userdata"};
            }
 
            users_num = userData.users_num;
-           console.log(users_num);
-
-           return client.query(requestQuery, [users_num])
-       }).then(requestData => {
-           return res.status(200).json({memoList: requestData.rows});
+           return getMemoListWithFolderName(client, users_num);
+       }).then(memoList => {
+           return res.status(200).json({memoList: memoList});
        }).catch(e => {
            return promiseErrorHandle(e, res);
        }).finally(() => {
@@ -144,5 +146,89 @@ exports.requestMemo = (req, res) => {
 }
 
 exports.detailMemo = (req, res) => {
+    const getQuery = `SELECT * FROM memos WHERE owner = $1 AND memo_num = $2`;
 
+    const { user } = res.locals;
+    const memo_num = req.params.id;
+
+    pool.connect((err, client, release) => {
+        if(err) {
+            client?.release();
+            return res.status(500).json({message: "Internal server error"});
+        }
+
+        findUserById(client, user.id).then(userData => {
+            if(!userData) {
+                throw {code: 401, message: "Wrong userdata"};
+            }
+
+            return client.query(getQuery, [userData.users_num, memo_num])
+        }).then(getResult => {
+            if(getResult.rows.length < 1) {
+                throw {code: 404, message: "Memo not found"};
+            }
+
+            return res.status(200).json(getResult.rows[0]);
+        }).catch(e => {
+            promiseErrorHandle(e, res);
+        }).finally(() => {
+            client?.release();
+        })
+    })
+}
+
+exports.getMemoInFolder = (req, res) => {
+    const folderQuery = `SELECT * FROM folders WHERE users_num = $1 AND folder_num = $2`;
+    const query = `SELECT * FROM memos WHERE owner = $1 AND folder_num = $2`;
+
+    const folder_num = req.params.id;
+    const { user } = res.locals;
+
+    let users_num;
+
+    if(!folder_num) {
+        return res.status(404).json({message: "Page not found"});
+    }
+
+    pool.connect((err, client, release) => {
+        if(err) {
+            client?.release();
+            return res.status(500).json({message: "Internal server error - Block 1"});
+        }
+
+        findUserById(client, user.id).then(userData => {
+            if(!userData) {
+                throw {code: 401, message: "Wrong userdata"};
+            }
+
+            users_num = userData.users_num;
+
+            return client.query(folderQuery, [users_num, folder_num])
+        }).then(getFolderResult => {
+            if (getFolderResult.rows.length < 1) {
+                throw {code: 400, message: "Can't find folder"};
+            }
+            console.log(getFolderResult.rows);
+            if (getFolderResult.rows[0].password) {
+                const {password} = req.body;
+                if (!password) {
+                    throw {code: 401, message: "Need password"};
+                }
+                if (!bcrypt.compareSync(password, getFolderResult.rows[0].password)) {
+                    throw {code: 401, message: "Password mismatch"};
+                }
+            }
+
+            return client.query(query, [users_num, folder_num])
+        }).then(getResult => {
+            if(getResult.rows.length < 1) {
+                throw {code: 500, message: "Can't find memo"}
+            }
+            return res.status(200).json({folder_num: folder_num, memoList: getResult.rows});
+        }).catch(e => {
+            promiseErrorHandle(e, res);
+        }).finally(() => {
+            client?.release();
+        });
+    });
 }

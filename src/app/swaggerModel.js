@@ -101,6 +101,9 @@
  *                  folder_num:
  *                      type: number
  *                      description: 메모가 포함된 폴더의 번호입니다.
+ *                  folder_name:
+ *                      type: string
+ *                      description : 폴더의 이름입니다. 폴더 안에 들어있는 경우에만 해당 값이 존재합니다.
  *              example:
  *                  memo_num: 1
  *                  owner: 1
@@ -108,7 +111,8 @@
  *                  title: 구글
  *                  content: {arr: [{type: 1, value: 구글입니다}]}
  *                  date_created: 2023-04-07T03:02:40.374Z
- *                  folder_num: null
+ *                  folder_num: 1
+ *                  folder_name: 포털사이트
  *          Image:
  *              type: object
  *              properties:
@@ -145,4 +149,32 @@
  *                  filename: next_1681279699394.png
  *                  path: static/next_1681279699394.png
  *                  size: 2952
+ *          Folder:
+ *              type: object
+ *              properties:
+ *                  folder_num:
+ *                      type: number
+ *                      description: 폴더의 고유 번호입니다.
+ *                  users_num:
+ *                      type: number
+ *                      description: 폴더를 소유한 유저 번호입니다.
+ *                  name:
+ *                      type: string
+ *                      description: 폴더의 이름입니다.
+ *                  thumbnail:
+ *                      type: string
+ *                      description: 썸네일 파일명입니다.
+ *                  isLocked:
+ *                      type: boolean
+ *                      description: 잠금 여부입니다.
+ *                  memoCount:
+ *                      type: number
+ *                      description: 폴더에 포함된 메모의 개수입니다.
+ *              example:
+ *                  folder_num: 5
+ *                  users_num: 2
+ *                  name: 여행기
+ *                  thumbnail: picture_1681279699394.png
+ *                  isLocked: true
+ *                  memoCount: 3
  */

@@ -13,9 +13,14 @@ const options = {
             {
                 url: "http://localhost:3000",
             },
+            {
+                url: "http://linkive.site/"
+            }
         ],
     },
-    apis: ["./src/app/Folder/*.js", "./src/app/Image/*.js", "./src/app/Memo/*.js", "./src/app/Pagesheet/*.js", "./src/app/User/*.js", "./src/app/swaggerModel.js"],
+    apis: ["./src/app/Folder/*.js", "./src/app/Image/*.js", "./src/app/Memo/*.js",
+        "./src/app/Pagesheet/*.js", "./src/app/User/*.js", "./src/app/Search/*.js",
+        "./src/app/swaggerModel.js",],
 };
 
 const specs = swaggerJsdoc(options);
