@@ -5,7 +5,6 @@ import { findUserById, findUserByEmail, findUserByNickname } from "./userDao";
 export const getUserById = async (id) => {
   const client = await pool.connect(); // 클라이언트를 가져옵니다.
   try {
-    console.log("getUserById 시작");
     const userInfo = await findUserById(client, id); // 사용자 정보를 가져옵니다.
     if (!userInfo) {
       return null;
@@ -49,3 +48,4 @@ export const getUserByNickname = async (nickname) => {
     client.release(); // 클라이언트를 반납합니다.
   }
 };
+
