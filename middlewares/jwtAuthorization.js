@@ -60,13 +60,13 @@ export const jwtAuthorization = async (req, res, next) => {
 export const generateToken = async (user) => {
   // 토큰을 생성하는 함수
   const accessToken = jwt.sign(
-    { id: user.id, email: user.email, nickname: user.nickname },
+    { id: user.id, email: user.email, nickname: user.nickname, socialLogin: user.socialLogin },
     process.env.JWT_SECRET,
     { expiresIn: "30d" }
   );
 
   const refreshToken = jwt.sign(
-    { id: user.id, email: user.email, nickname: user.nickname },
+    { id: user.id, email: user.email, nickname: user.nickname, socialLogin: user.socialLogin },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" }
   );
