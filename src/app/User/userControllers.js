@@ -177,7 +177,6 @@ export const checkCurrentPw = async (req, res) => {
   const user = await getUserById(id);
   // 비밀번호 일치 확인
   if (!bcrypt.compareSync(currentPassword, user.password)) {
-    console.log("현재 비밀번호와 일치하지 않습니다.");
     return res
       .status(401)
       .json({ message: "현재 비밀번호와 일치하지 않습니다." });
@@ -187,19 +186,12 @@ export const checkCurrentPw = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const id = res.locals.user.id; // 토큰에서 id 추출
-  // 헤더에서 social-login 추출
-  const socialLogin = req.headers["social-login"];
   const user = await getUserById(id);
   const { email, password } = req.body;
   if (user.email !== email) {
     return res.status(404).json({ message: "이메일이 일치하지 않습니다." });
-  }
-  if (!socialLogin) {  // 소셜로그인이 아니면 비밀번호도 입력해야함
-    if (!bcrypt.compareSync(password, user.password)) {
-      return res
-        .status(1401)
-        .json({ message: "비밀번호가 일치하지 않습니다." });
-    }
+  } else if (!bcrypt.compareSync(password, user.password)) {
+    return res.status(1401).json({ message: "비밀번호가 일치하지 않습니다." });
   }
 
   try {
@@ -220,10 +212,9 @@ export const socialLogin = async (
   profile_img_url
 ) => {
   // 가입유저인지 DB 확인
-  try {
+  try { 
     const exUser = await getUserById(id);
-    if (exUser) {
-      // 가입된 유저면 pass
+    if (exUser) { // 가입된 유저면 pass
       console.log("이미 가입된 유저");
     } else {
       // 새로운 유저면 생성
@@ -238,7 +229,7 @@ export const socialLogin = async (
       console.log("새로운 유저 생성");
     }
     // 토큰 발급
-    const token = generateToken({ id, email, nickname });
+    const token = generateToken({id, email, nickname})
     return token;
   } catch (err) {
     console.error(err);
@@ -250,8 +241,7 @@ export const getUserInfoByToken = async (req, res) => {
   try {
     const id = res.locals.user.id;
     let userInfo = await getUserById(id);
-    userInfo = {
-      // 필요한 정보만 추출
+    userInfo = {  // 필요한 정보만 추출
       id: userInfo.id,
       nickname: userInfo.nickname,
       email: userInfo.email,
@@ -272,30 +262,4 @@ export const getProfileImg = async (req, res) => {
   const user = await getUserById(id);
   const profileImg = user.profile_img_url;
   return res.status(200).json({ profileImg });
-};
-
-export const checkIdwithEmail = async (req, res) => {
-  const { id, email } = req.body;
-  const user = await getUserById(id);
-  if (!user) {
-    return res
-      .status(401)
-      .json({ message: "해당 id의 user가 존재하지 않습니다." });
-  } else if (user.email !== email) {
-    return res
-      .status(409)
-      .json({ message: "아이디와 이메일이 일치하지 않습니다." });
-  }
-  return res.status(200).json({ message: "아이디와 이메일이 일치합니다." });
-};
-
-export const checkIsEmail = async (req, res) => {
-  const { email } = req.body;
-  const user = await getUserByEmail(email);
-  if (!user) {
-    return res
-      .status(401)
-      .json({ message: "해당 이메일로 가입된 아이디가 없습니다." });
-  }
-  return res.status(200).json({ message: "이메일이 존재합니다." });
 };
