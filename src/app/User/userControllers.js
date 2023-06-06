@@ -145,6 +145,27 @@ export const changeUserInfo = async (req, res) => {
   }
 };
 
+export const checkNewId = async (req, res) => {
+  // 아이디 중복확인하는 함수
+  const { newId } = req.body;
+  if (!newId) {
+    // 입력 아이디가 없으면
+    return res.status(400).json({ message: "Id is required" });
+  } else
+    try {
+      const user = await getUserById(newId);
+      if (user) {
+        return res.status(409).json({ message: "Id already exists" });
+      } else {
+        return res.status(200).json({ message: "Id available" });
+      }
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 export const checkDuplicatedId = async (req, res) => {
   // 아이디 중복확인하는 함수
   const { newId } = req.body;
