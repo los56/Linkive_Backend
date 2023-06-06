@@ -18,7 +18,8 @@ import {
   getProfileImg,
   checkIdwithEmail,
   checkIsEmail,
-  checkNewId
+  checkNewId,
+  checkValidEmail,
 } from "./userControllers";
 import { jwtAuthorization } from "../../../middlewares/jwtAuthorization";
 import { oauth2Client, authorizationUrl } from "../../../config/oauth";
@@ -43,6 +44,7 @@ userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로
 userRouter.get("/userInfo", jwtAuthorization, getUserInfoByToken); // 회원정보 조회
 userRouter.post("/checkIdwithEmail", checkIdwithEmail)  // 아이디와 이메일이 일치하는지 확인
 userRouter.post("/checkIsEmail", checkIsEmail)  // 해당 이메일로 가입된 아이디가 있는지 확인
+userRouter.post("/checkValidEmail", checkValidEmail)  // 해당 이메일로 가입된 아이디가 있는지 확인
 
 // 테스트용 API
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {

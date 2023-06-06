@@ -317,3 +317,14 @@ export const checkIsEmail = async (req, res) => {
   }
   return res.status(200).json({ message: "이메일이 존재합니다." });
 };
+
+export const checkValidEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return res
+      .status(200)
+      .json({ message: "해당 이메일로 가입된 아이디가 없습니다. 사용가능" });
+  }
+  return res.status(401).json({ message: "이미 이메일이 존재합니다." });
+};
