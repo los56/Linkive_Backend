@@ -5,7 +5,17 @@ import morgan from "morgan"; // 로그를 남기는 미들웨어
 import pool from "./config/database"; // 데이터베이스 연결을 위한 pool을 가져옵니다.
 
 const app = express();
-const logger = morgan("dev");
+const logger = morgan((tokens, req, res) => {
+  return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms', '|',
+      req.headers['x-forwarded-for'] || req.connection.remoteAddress, 'BY',
+      tokens['remote-addr'](req, res)
+  ].join(' ');
+});
 const cookieParser = require("cookie-parser");
 
 const api = require('./src/app/apiRouter');
