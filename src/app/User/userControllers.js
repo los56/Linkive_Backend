@@ -57,10 +57,7 @@ export const signup = async (req, res) => {
   const { id, password, email, nickname } = req.body;
   const newUser = { id, password, email, nickname };
 
-  if (await getUserByNickname(nickname)) {
-    // 닉네임이 중복되는지 확인
-    return res.status(409).json({ message: "Nickname already exists" });
-  } else if (await getUserByEmail(email)) {
+  if (await getUserByEmail(email)) {
     // 이메일이 중복되는지 확인
     return res.status(409).json({ message: "Email already exists" });
   } else if (await getUserById(id)) {
@@ -165,7 +162,6 @@ export const checkNewId = async (req, res) => {
     }
 };
 
-
 export const checkDuplicatedId = async (req, res) => {
   // 아이디 중복확인하는 함수
   const { newId } = req.body;
@@ -215,7 +211,8 @@ export const deleteUser = async (req, res) => {
   if (user.email !== email) {
     return res.status(404).json({ message: "이메일이 일치하지 않습니다." });
   }
-  if (!socialLogin) {  // 소셜로그인이 아니면 비밀번호도 입력해야함
+  if (!socialLogin) {
+    // 소셜로그인이 아니면 비밀번호도 입력해야함
     if (!bcrypt.compareSync(password, user.password)) {
       return res
         .status(1401)
