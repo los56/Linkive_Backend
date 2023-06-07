@@ -57,10 +57,7 @@ export const signup = async (req, res) => {
   const { id, password, email, nickname } = req.body;
   const newUser = { id, password, email, nickname };
 
-  if (await getUserByNickname(nickname)) {
-    // 닉네임이 중복되는지 확인
-    return res.status(409).json({ message: "Nickname already exists" });
-  } else if (await getUserByEmail(email)) {
+  if (await getUserByEmail(email)) {
     // 이메일이 중복되는지 확인
     return res.status(409).json({ message: "Email already exists" });
   } else if (await getUserById(id)) {
@@ -145,6 +142,26 @@ export const changeUserInfo = async (req, res) => {
   }
 };
 
+export const checkNewId = async (req, res) => {
+  // 아이디 중복확인하는 함수
+  const { newId } = req.body;
+  if (!newId) {
+    // 입력 아이디가 없으면
+    return res.status(400).json({ message: "Id is required" });
+  } else
+    try {
+      const user = await getUserById(newId);
+      if (user) {
+        return res.status(409).json({ message: "Id already exists" });
+      } else {
+        return res.status(200).json({ message: "Id available" });
+      }
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 export const checkDuplicatedId = async (req, res) => {
   // 아이디 중복확인하는 함수
   const { newId } = req.body;
@@ -194,7 +211,8 @@ export const deleteUser = async (req, res) => {
   if (user.email !== email) {
     return res.status(404).json({ message: "이메일이 일치하지 않습니다." });
   }
-  if (!socialLogin) {  // 소셜로그인이 아니면 비밀번호도 입력해야함
+  if (!socialLogin) {
+    // 소셜로그인이 아니면 비밀번호도 입력해야함
     if (!bcrypt.compareSync(password, user.password)) {
       return res
         .status(1401)
@@ -298,4 +316,15 @@ export const checkIsEmail = async (req, res) => {
       .json({ message: "해당 이메일로 가입된 아이디가 없습니다." });
   }
   return res.status(200).json({ message: "이메일이 존재합니다." });
+};
+
+export const checkValidEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return res
+      .status(200)
+      .json({ message: "해당 이메일로 가입된 아이디가 없습니다. 사용가능" });
+  }
+  return res.status(401).json({ message: "이미 이메일이 존재합니다." });
 };
