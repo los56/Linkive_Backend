@@ -56,6 +56,7 @@ export const signup = async (req, res) => {
   // 회원가입하는 함수
   const { id, password, email, nickname } = req.body;
   const newUser = { id, password, email, nickname };
+  console.log(newUser);
 
   if (await getUserByNickname(nickname)) {
     // 닉네임이 중복되는지 확인
@@ -212,9 +213,10 @@ export const socialLogin = async (
   profile_img_url
 ) => {
   // 가입유저인지 DB 확인
-  try { 
+  try {
     const exUser = await getUserById(id);
-    if (exUser) { // 가입된 유저면 pass
+    if (exUser) {
+      // 가입된 유저면 pass
       console.log("이미 가입된 유저");
     } else {
       // 새로운 유저면 생성
@@ -229,7 +231,7 @@ export const socialLogin = async (
       console.log("새로운 유저 생성");
     }
     // 토큰 발급
-    const token = generateToken({id, email, nickname})
+    const token = generateToken({ id, email, nickname });
     return token;
   } catch (err) {
     console.error(err);
@@ -241,7 +243,8 @@ export const getUserInfoByToken = async (req, res) => {
   try {
     const id = res.locals.user.id;
     let userInfo = await getUserById(id);
-    userInfo = {  // 필요한 정보만 추출
+    userInfo = {
+      // 필요한 정보만 추출
       id: userInfo.id,
       nickname: userInfo.nickname,
       email: userInfo.email,
