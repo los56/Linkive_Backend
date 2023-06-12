@@ -42,9 +42,9 @@ userRouter.post("/checkDuplicatedId", jwtAuthorization, checkDuplicatedId); // �
 userRouter.post("/checkCurrentPw", jwtAuthorization, checkCurrentPw); // 현재 비밀번호 확인
 userRouter.get("/profileImg", jwtAuthorization, getProfileImg); // 유저 프로필이미지 return
 userRouter.get("/userInfo", jwtAuthorization, getUserInfoByToken); // 회원정보 조회
-userRouter.post("/checkIdwithEmail", checkIdwithEmail)  // 아이디와 이메일이 일치하는지 확인
-userRouter.post("/checkIsEmail", checkIsEmail)  // 해당 이메일로 가입된 아이디가 있는지 확인
-userRouter.post("/checkValidEmail", checkValidEmail)  // 해당 이메일로 가입된 아이디가 있는지 확인
+userRouter.post("/checkIdwithEmail", checkIdwithEmail); // 아이디와 이메일이 일치하는지 확인
+userRouter.post("/checkIsEmail", checkIsEmail); // 해당 이메일로 가입된 아이디가 있는지 확인
+userRouter.post("/checkValidEmail", checkValidEmail); // 해당 이메일로 가입된 아이디가 있는지 확인
 
 // 테스트용 API
 userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
@@ -56,7 +56,7 @@ userRouter.get("/jwtAuthorization", jwtAuthorization, (req, res) => {
 });
 userRouter.get("/checkAuth", checkAuth, (req, res) => {
   // checkAuth 테스트
-  return res.redirect(302, `${process.env.CLIENT_URL}/`);
+  return res.redirect(302, `${process.env.WEB_URL}/`);
 });
 
 // 소셜로그인 : 구글
@@ -92,7 +92,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
         const jwtTokens = await socialLogin(id, email, name, "google", picture);
         setCookie(res, "accessToken", jwtTokens.accessToken); // 쿠키에 jwt 토큰 저장
         setCookie(res, "refreshToken", jwtTokens.refreshToken); // 쿠키에 리프레시 토큰 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
+        return res.redirect(`${process.env.WEB_URL}/`); // 로그인 인증 완료, 홈으로 redirect
       } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -176,7 +176,7 @@ userRouter.get("/naver/member", async (req, res) => {
         );
         setCookie(res, "accessToken", tokens.accessToken); // 쿠키에 jwt 토큰 저장
         setCookie(res, "refreshToken", tokens.refreshToken); // 쿠키에 리프레시 토큰 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
+        return res.redirect(`${process.env.WEB_URL}/`); // 로그인 인증 완료, 홈으로 redirect
       } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -260,7 +260,7 @@ userRouter.get("/kakao/member", async function (req, res) {
         );
         setCookie(res, "accessToken", tokens.accessToken); // 쿠키에 jwt 토큰 저장
         setCookie(res, "refreshToken", tokens.refreshToken); // 쿠키에 리프레시 토큰 저장
-        return res.redirect(`${process.env.CLIENT_URL}/`); // 로그인 인증 완료, 홈으로 redirect
+        return res.redirect(`${process.env.WEB_URL}/`); // 로그인 인증 완료, 홈으로 redirect
       } catch (error) {
         console.log(error);
         return res.status(500).json({
