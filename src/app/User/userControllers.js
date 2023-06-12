@@ -56,6 +56,7 @@ export const signup = async (req, res) => {
   // 회원가입하는 함수
   const { id, password, email, nickname } = req.body;
   const newUser = { id, password, email, nickname };
+  console.log(newUser);
 
   if (await getUserByEmail(email)) {
     // 이메일이 중복되는지 확인
