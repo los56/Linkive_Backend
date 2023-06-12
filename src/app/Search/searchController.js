@@ -4,6 +4,7 @@ const pool = require('../../../config/database').default;
 
 const {searchTitle, searchFolder, searchContent, searchAll} = require('./searchUtils');
 const promiseErrorHandle = require("../../../utils/promiseErrorHandle");
+const {search} = require("../../../build/server/968511344226b44c5b19f30fa4b346b7fabf165e69f8ff599563bb18cad0eafe/usr/src/app/src/app/Search/searchController");
 
 exports.search = (req, res) => {
     const { keyword, method } = req.body;
@@ -34,6 +35,8 @@ exports.search = (req, res) => {
                 searchResult = searchFolder(keyword, memoList);
             } else if(method?.toLowerCase() == 'content') {
                 searchResult = searchContent(keyword, memoList);
+            } else if(method?.toLowerCase() == 'place') {
+                searchResult = searchPlace(keyword, memoList);
             } else {
                 searchResult = searchAll(keyword, memoList);
             }

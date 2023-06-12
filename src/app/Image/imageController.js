@@ -1,8 +1,14 @@
 const fs = require('fs');
 
 exports.upload = (req, res) => {
-    console.log(req.file);
-    return res.send(req.file);
+    if (!req.file) {
+        return res.status(500).json({
+            message: "Upload Error"
+        });
+    }
+    return res.status(200).json({
+        file_info: req.file
+    });
 }
 
 exports.delete = (req, res) => {
