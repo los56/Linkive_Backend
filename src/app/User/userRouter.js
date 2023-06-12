@@ -69,7 +69,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
   const url = require("url");
   // Receive the callback from Google's OAuth 2.0 server.
   if (req.url.startsWith("/auth/google/callback")) {
-    let userCredential = null;  // 구글 로그인 유저 정보
+    let userCredential = null; // 구글 로그인 유저 정보
     // Handle the OAuth 2.0 server response
     let q = url.parse(req.url, true).query;
     if (q.error) {
@@ -78,7 +78,7 @@ userRouter.get("/auth/google/callback", async (req, res, next) => {
     } else {
       // Get access and refresh tokens (if access_type is offline)
       let { tokens } = await oauth2Client.getToken(q.code); // access_token, scope, token_type, id_token, expiry_date
-      oauth2Client.setCredentials(tokens);  // API 접근을 위해 인증 토큰 설정
+      oauth2Client.setCredentials(tokens); // API 접근을 위해 인증 토큰 설정
 
       // Get the user's profile information
       let userInfo = await oauth2Client.request({
@@ -144,7 +144,7 @@ userRouter.get("/auth/naver/callback", async (req, res, next) => {
       // 토큰 요청 성공
       const accessToken = JSON.parse(body).access_token;
       // 네이버 유저 정보 요청 라우터로 redirect
-      res.redirect("/users/naver/member?access_token=" + accessToken);
+      res.redirect("/api/users/naver/member?access_token=" + accessToken);
     } else {
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode, error);
@@ -225,7 +225,7 @@ userRouter.get("/auth/kakao/callback", async (req, res, next) => {
       // 토큰 요청 성공
       const accessToken = JSON.parse(body).access_token;
       // 카카오 유저 정보 요청 라우터로 redirect
-      res.redirect("/users/kakao/member?access_token=" + accessToken);
+      res.redirect("/api/users/kakao/member?access_token=" + accessToken);
     } else {
       res.status(response.statusCode).end();
       console.log("error = " + response.statusCode);
