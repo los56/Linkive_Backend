@@ -68,20 +68,39 @@ export const insertUser = async (
 
 export const saveUser = async (client, user) => {
   console.log("saveUser 시작");
-  const saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $3, profile_img_url = $4 WHERE users_num = $5`;
+  let saveUserQuery;
+  if(!user.password) {
+     saveUserQuery = `UPDATE users SET nickname = $1, id = $2, profile_img_url = $3 WHERE users_num = $4`;
+     try {
+      await client.query(saveUserQuery, [
+        user.nickname,
+        user.id,
+        user.profile_img_url,
+        user.users_num,
+      ]); // 쿼리문을 실행합니다.
+      console.log("saveUser 성공");
+    } catch (err) {
+      console.log("saveUser error");
+      console.error(err);
+      throw err;
+    }
+  }
+     else {
+   saveUserQuery = `UPDATE users SET nickname = $1, id = $2, password = $5, profile_img_url = $3 WHERE users_num = $4`;
   try {
     await client.query(saveUserQuery, [
       user.nickname,
       user.id,
-      await hashPassword(user.password),
       user.profile_img_url,
       user.users_num,
+      await hashPassword(user.password),
     ]); // 쿼리문을 실행합니다.
     console.log("saveUser 성공");
   } catch (err) {
     console.log("saveUser error");
     console.error(err);
     throw err;
+  }
   }
 };
 

@@ -58,10 +58,7 @@ export const signup = async (req, res) => {
   const newUser = { id, password, email, nickname };
   console.log(newUser);
 
-  if (await getUserByNickname(nickname)) {
-    // 닉네임이 중복되는지 확인
-    return res.status(409).json({ message: "Nickname already exists" });
-  } else if (await getUserByEmail(email)) {
+  if (await getUserByEmail(email)) {
     // 이메일이 중복되는지 확인
     return res.status(409).json({ message: "Email already exists" });
   } else if (await getUserById(id)) {
@@ -146,6 +143,26 @@ export const changeUserInfo = async (req, res) => {
   }
 };
 
+export const checkNewId = async (req, res) => {
+  // 아이디 중복확인하는 함수
+  const { newId } = req.body;
+  if (!newId) {
+    // 입력 아이디가 없으면
+    return res.status(400).json({ message: "Id is required" });
+  } else
+    try {
+      const user = await getUserById(newId);
+      if (user) {
+        return res.status(409).json({ message: "Id already exists" });
+      } else {
+        return res.status(200).json({ message: "Id available" });
+      }
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 export const checkDuplicatedId = async (req, res) => {
   // 아이디 중복확인하는 함수
   const { newId } = req.body;
@@ -178,6 +195,7 @@ export const checkCurrentPw = async (req, res) => {
   const user = await getUserById(id);
   // 비밀번호 일치 확인
   if (!bcrypt.compareSync(currentPassword, user.password)) {
+    console.log("현재 비밀번호와 일치하지 않습니다.");
     return res
       .status(401)
       .json({ message: "현재 비밀번호와 일치하지 않습니다." });
@@ -187,12 +205,20 @@ export const checkCurrentPw = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   const id = res.locals.user.id; // 토큰에서 id 추출
+  // 헤더에서 social-login 추출
+  const socialLogin = req.headers["social-login"];
   const user = await getUserById(id);
   const { email, password } = req.body;
   if (user.email !== email) {
     return res.status(404).json({ message: "이메일이 일치하지 않습니다." });
-  } else if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(1401).json({ message: "비밀번호가 일치하지 않습니다." });
+  }
+  if (!socialLogin) {
+    // 소셜로그인이 아니면 비밀번호도 입력해야함
+    if (!bcrypt.compareSync(password, user.password)) {
+      return res
+        .status(1401)
+        .json({ message: "비밀번호가 일치하지 않습니다." });
+    }
   }
 
   try {
@@ -265,4 +291,41 @@ export const getProfileImg = async (req, res) => {
   const user = await getUserById(id);
   const profileImg = user.profile_img_url;
   return res.status(200).json({ profileImg });
+};
+
+export const checkIdwithEmail = async (req, res) => {
+  const { id, email } = req.body;
+  const user = await getUserById(id);
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "해당 id의 user가 존재하지 않습니다." });
+  } else if (user.email !== email) {
+    return res
+      .status(409)
+      .json({ message: "아이디와 이메일이 일치하지 않습니다." });
+  }
+  return res.status(200).json({ message: "아이디와 이메일이 일치합니다." });
+};
+
+export const checkIsEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return res
+      .status(401)
+      .json({ message: "해당 이메일로 가입된 아이디가 없습니다." });
+  }
+  return res.status(200).json({ message: "이메일이 존재합니다." });
+};
+
+export const checkValidEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await getUserByEmail(email);
+  if (!user) {
+    return res
+      .status(200)
+      .json({ message: "해당 이메일로 가입된 아이디가 없습니다. 사용가능" });
+  }
+  return res.status(401).json({ message: "이미 이메일이 존재합니다." });
 };
