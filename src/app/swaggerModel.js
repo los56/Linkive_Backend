@@ -9,7 +9,7 @@
  *                  type: string
  *                  format: JWT
  *              required: true
- *              description: 로그인으로 발급받은 AccessToken을 입력합니다.<br/><br/>주의점&#58; `JWT {발급받은 토큰}` 형태로 작성해야 합니다
+ *              description: 로그인으로 발급받은 AccessToken을 입력합니다.<br/><br/>주의점&#58; `Bearer {발급받은 토큰}` 형태로 작성해야 합니다
  *          RefreshToken:
  *              in: header
  *              name: refresh-token

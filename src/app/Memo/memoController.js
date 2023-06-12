@@ -222,7 +222,7 @@ exports.getMemoInFolder = (req, res) => {
             return client.query(query, [users_num, folder_num])
         }).then(getResult => {
             if(getResult.rows.length < 1) {
-                throw {code: 500, message: "Can't find memo"}
+                return res.status(200).json({folder_num: folder_num, memoList: []})
             }
             return res.status(200).json({folder_num: folder_num, memoList: getResult.rows});
         }).catch(e => {

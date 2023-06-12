@@ -4,7 +4,7 @@ const promiseErrorHandle = require("../../../utils/promiseErrorHandle");
 
 const bcrypt = require('bcrypt');
 
-const { getFolderList } = require('./folderUtils');
+const { getFolderList, getFolderInfo } = require('./folderUtils');
 const {getMemoList} = require("../Memo/memoUtils");
 
 exports.createFolder = (req, res) => {
@@ -204,5 +204,31 @@ exports.requestFolderList = (req, res) => {
        }).finally(() => {
            client.release();
        });
+    });
+}
+
+exports.requestFolderInfo = (req, res) => {
+    const { user } = res.locals;
+    const { folder_num } = req.body;
+
+    pool.connect((err, client, release) => {
+        if(err) {
+            client?.release();
+            return res.status(500).json({message: "Internal server error"})
+        }
+
+        findUserById(client, user.id).then(userData => {
+            if(!userData) {
+                throw {code: 401, message: "Wrong userdata"};
+            }
+
+            return getFolderInfo(client, userData.users_num, folder_num);
+        }).then(folderInfo => {
+            return res.status(200).json({folder_info: folderInfo});
+        }).catch(e => {
+            promiseErrorHandle(e, res);
+        }).finally(() => {
+            client?.release();
+        });
     });
 }

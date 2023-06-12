@@ -18,5 +18,7 @@ services:
       - "80:80"
       - "443:443"
     image: peachtree/linkive_backend
+    volumes:
+      - ./static:/usr/src/app/static
     restart: always
 
