@@ -19,4 +19,6 @@ router.use("/folders", folderRouter);
 router.use("/pagesheets", pagesheetRouter);
 router.use("/Search", searchRouter);
 
+router.use("/static", express.static('static'));
+
 module.exports = router;

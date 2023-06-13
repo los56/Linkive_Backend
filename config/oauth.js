@@ -27,4 +27,5 @@ export const authorizationUrl = oauth2Client.generateAuthUrl({
   scope: scopes,
   // Enable incremental authorization. Recommended as a best practice.
   include_granted_scopes: true,
+  redirect_uri: 'http://linkive.site/api/users/auth/google/callback'
 });

@@ -34,6 +34,8 @@ exports.search = (req, res) => {
                 searchResult = searchFolder(keyword, memoList);
             } else if(method?.toLowerCase() == 'content') {
                 searchResult = searchContent(keyword, memoList);
+            } else if(method?.toLowerCase() == 'place') {
+                searchResult = searchPlace(keyword, memoList);
             } else {
                 searchResult = searchAll(keyword, memoList);
             }
