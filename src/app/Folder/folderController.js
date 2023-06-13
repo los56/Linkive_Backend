@@ -48,6 +48,7 @@ exports.createFolder = (req, res) => {
 exports.editFolder = (req, res) => {
     const checkQuery = `SELECT * FROM folders WHERE folder_num = $1 AND users_num = $2`;
     const editQuery = `UPDATE folders SET name = $1, password = $2, thumbnail = $3 WHERE folder_num = $4 AND users_num = $5`;
+    const editWOQuery = `UPDATE folders SET name = $1, thumbnail = $2 WHERE folder_num = $3 AND users_num = $4`
 
     const { user } = res.locals;
 
@@ -57,7 +58,8 @@ exports.editFolder = (req, res) => {
             return res.status(500).send({message: "Internal server error - Block 1"});
         }
 
-        const { folder_num, name, password, thumbnail } = req.body;
+        const { folder_num, name, thumbnail } = req.body;
+        let { password } = req.body;
         let users_num;
 
         findUserById(client, user.id).then(userData => {
@@ -78,16 +80,21 @@ exports.editFolder = (req, res) => {
                 if(!prev_password) {
                     throw {code: 401, message: "Need previous password"};
                 }
-                if(!bcrypt.compareSync(checkData.rows[0].password, prev_password)) {
+                if(!bcrypt.compareSync(prev_password, checkData.rows[0].password)) {
                     throw {code: 401, message: "Password mismatch"};
                 }
             }
 
-            return client.query(editQuery, [name, password, thumbnail, folder_num, users_num])
-        }).then(insertResult => {
-            if(insertResult.rows.length < 1) {
-                throw {code: 500, message: "Internal server error - Block 2"};
+            if(password) {
+                password = bcrypt.hashSync(password, 5);
+                return client.query(editQuery, [name, password, thumbnail, folder_num, users_num]);
             }
+
+            return client.query(editWOQuery, [name, thumbnail, folder_num, users_num]);
+        }).then(insertResult => {
+            // if(insertResult.rows.length < 1) {
+            //     throw {code: 500, message: "Internal server error - Block 2"};
+            // }
 
             return res.status(200).json({message: "Folder edited"});
         }).catch(e => {
@@ -186,15 +193,10 @@ exports.requestFolderList = (req, res) => {
             let memoList = memoResult;
             for(let i = 0;i < folderList.length;i++) {
                 for(let j = 0;j < memoList.length;j++) {
-                    if(!memoList[j].folder_num) {
-                        continue;
-                    }
+                    folderList[i].memoCount = 0;
+
                     if(folderList[i].folder_num == memoList[j].folder_num) {
-                        if(!folderList[i].memoCount) {
-                            folderList[i].memoCount = 1;
-                        } else {
-                            folderList[i].memoCount += 1;
-                        }
+                        folderList[i].memoCount += 1;
                     }
                 }
             }

@@ -3,7 +3,6 @@ version: '3.9'
 services:
   db:
     platform: linux/amd64
-    build: database
     image: peachtree/linkive_database
     ports:
       - "5432:5432"
@@ -13,11 +12,16 @@ services:
 
   backend:
     platform: linux/amd64
-    build: ..
     ports:
-      - "8000:8000"
+      - "80:80"
+      - "443:443"
     image: peachtree/linkive_backend
     volumes:
       - ./static:/usr/src/app/static
     restart: always
-
+  web:
+    platform: linux/amd64
+    image: peachtree/linkive_web
+    ports:
+      - "80:80"
+    restart: always

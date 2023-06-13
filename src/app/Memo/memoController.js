@@ -147,9 +147,12 @@ exports.requestMemo = (req, res) => {
 
 exports.detailMemo = (req, res) => {
     const getQuery = `SELECT * FROM memos WHERE owner = $1 AND memo_num = $2`;
+    const getFolderName = `SELECT * FROM folders WHERE users_num = $1 AND folder_num = $2`;
 
     const { user } = res.locals;
     const memo_num = req.params.id;
+
+    let users_num;
 
     pool.connect((err, client, release) => {
         if(err) {
@@ -162,13 +165,29 @@ exports.detailMemo = (req, res) => {
                 throw {code: 401, message: "Wrong userdata"};
             }
 
+            users_num = userData.users_num;
+
             return client.query(getQuery, [userData.users_num, memo_num])
         }).then(getResult => {
             if(getResult.rows.length < 1) {
                 throw {code: 404, message: "Memo not found"};
             }
 
-            return res.status(200).json(getResult.rows[0]);
+            const resultMemo = getResult.rows[0];
+
+            if(resultMemo.folder_num) {
+                client.query(getFolderName, [users_num, resultMemo.folder_num]).then(folderRes => {
+                    if(folderRes.rows.length < 1) {
+                        return res.status(200).json(resultMemo);
+                    }
+
+                    resultMemo.folder_name = folderRes.rows[0].name;
+
+                    return res.status(200).json(resultMemo);
+                })
+            } else {
+                return res.status(200).json(resultMemo);
+            }
         }).catch(e => {
             promiseErrorHandle(e, res);
         }).finally(() => {
