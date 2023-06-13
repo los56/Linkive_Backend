@@ -14,7 +14,6 @@ export function searchFolder(keyword, memos) {
     const result = [];
 
     for(let i = 0;i < memos.length;i++) {
-        console.log(memos[i])
         if(memos[i].folder_name?.includes(keyword)) {
             result.push(memos[i]);
         }
@@ -47,8 +46,8 @@ export function searchPlace(keyword, memos) {
     for(let i = 0;i < memos.length;i++) {
         const content = memos[i].content.arr;
         for(let j = 0;j < content.length;j++) {
-            if(content[j].type == "text") {
-                if(content[j].road_address.includes(keyword) || content[j].land_address.includes(keyword)) {
+            if(content[j].type == "place") {
+                if(content[j].road_address?.includes(keyword) || content[j].land_address?.includes(keyword)) {
                     result.push(memos[i]);
                     break;
                 }
